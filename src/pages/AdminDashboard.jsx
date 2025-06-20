@@ -11,7 +11,7 @@ function DashboardHome() {
   return (
     <>
       <SearchHeader />
-      <div className="flex flex-row gap-8 w-full max-w-6xl mx-auto mt-4 mb-6 items-stretch">
+      <div className="flex flex-row gap-8 w-full max-w-6xl mx-auto mt-4 mb-8 items-stretch">
         <div className="flex-1 h-[200px] flex flex-col justify-stretch"><StatCards /></div>
         <div className="flex-1 h-[200px] flex flex-col justify-stretch"><ScrollingBoxes /></div>
       </div>
@@ -155,12 +155,12 @@ export default function AdminDashboard() {
     <div className="min-h-screen relative bg-[#e3e6eb] overflow-hidden" style={{ fontFamily: 'Nunito, sans-serif' }}>
       <PageBackground />
 
-      {/* Sidebar positioned behind - full page height */}
-      <div className="absolute left-0 top-0 bottom-0 z-10 h-full">
+      {/* Sidebar fixed - full window height */}
+      <div className="fixed left-0 top-0 h-screen z-10">
         <Sidebar />
       </div>
       
-      {/* Dashboard content positioned above */}
+      {/* Dashboard content positioned to the right of sidebar */}
       <div className="relative z-20 ml-72 flex flex-col min-h-screen">
         <div className="flex-1 flex flex-col p-8">
           <main className="flex-1 min-w-0">

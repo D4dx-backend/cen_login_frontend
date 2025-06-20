@@ -103,7 +103,7 @@ export default function SearchHeader() {
             alt="User Avatar"
             className="w-8 h-8 rounded-full object-cover transition-all duration-300"
           />
-          <span className="font-semibold">Danielle Campbell</span>
+          <span className="font-semibold">Admin</span>
           <FaChevronDown className={`text-xs transition-transform duration-300 ${
             isUserMenuSelected ? 'rotate-180' : ''
           }`} />
