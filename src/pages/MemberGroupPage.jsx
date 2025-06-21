@@ -11,10 +11,10 @@ export default function MemberGroupPage() {
         <Sidebar />
       </div>
       <div className="relative z-20 ml-72 flex flex-col min-h-screen">
-        <div className="sticky top-0 z-30 bg-[#e3e6eb]">
-          <SearchHeader />
-        </div>
         <div className="flex-1 flex flex-col p-8">
+          <div className="sticky top-0 z-30 bg-[#e3e6eb]">
+            <SearchHeader />
+          </div>
           <main className="flex-1 min-w-0">
             <div className="mt-8 text-2xl font-bold text-[#5041BC]">Members Group Page</div>
             <div className="mt-4 text-[#5041BC]">Content for Members Group will go here.</div>

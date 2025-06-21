@@ -15,10 +15,10 @@ export default function UserPage() {
       </div>
       {/* Main content positioned to the right of sidebar */}
       <div className="relative z-20 ml-72 flex flex-col min-h-screen">
-        <div className="sticky top-0 z-30 bg-[#e3e6eb]">
-          <SearchHeader />
-        </div>
         <div className="flex-1 flex flex-col p-8">
+          <div className="sticky top-0 z-30 bg-[#e3e6eb]">
+            <SearchHeader />
+          </div>
           <main className="flex-1 min-w-0 mt-8">
             {/* Heading */}
             <h2 className="text-3xl font-extrabold text-[#5041BC] mb-2">User Management</h2>
