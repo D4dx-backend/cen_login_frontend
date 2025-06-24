@@ -3,6 +3,8 @@ import React, { useState, useEffect } from 'react';
 export default function PageBackground() {
   const [scrollY, setScrollY] = useState(0);
   const [isScrolling, setIsScrolling] = useState(false);
+  const [mouseX, setMouseX] = useState(0);
+  const [mouseY, setMouseY] = useState(0);
 
   useEffect(() => {
     let scrollTimeout;
@@ -17,162 +19,238 @@ export default function PageBackground() {
       }, 150);
     };
 
+    const handleMouseMove = (e) => {
+      setMouseX(e.clientX / window.innerWidth);
+      setMouseY(e.clientY / window.innerHeight);
+    };
+
     window.addEventListener('scroll', handleScroll);
+    window.addEventListener('mousemove', handleMouseMove);
+    
     return () => {
       window.removeEventListener('scroll', handleScroll);
+      window.removeEventListener('mousemove', handleMouseMove);
       clearTimeout(scrollTimeout);
     };
   }, []);
 
   return (
-    <div className="fixed inset-0 z-0 pointer-events-none">
-      {/* Subtle Grid Pattern */}
+    <div className="fixed inset-0 z-0 pointer-events-none overflow-hidden">
+      {/* Dynamic Gradient Mesh Background */}
+      <div 
+        className="absolute inset-0 opacity-30"
+        style={{
+          background: `
+            radial-gradient(circle at ${20 + mouseX * 20}% ${30 + mouseY * 20}%, rgba(80, 65, 188, 0.15) 0%, transparent 50%),
+            radial-gradient(circle at ${80 - mouseX * 15}% ${70 - mouseY * 15}%, rgba(108, 99, 255, 0.12) 0%, transparent 60%),
+            radial-gradient(circle at ${50 + mouseX * 10}% ${50 + mouseY * 10}%, rgba(162, 106, 234, 0.08) 0%, transparent 70%)
+          `,
+          transform: `translateY(${scrollY * 0.1}px)`
+        }}
+      />
+
+      {/* Enhanced Grid Pattern with Perspective */}
       <div 
         className={`absolute inset-0 transition-all duration-1000 ease-out ${
-          isScrolling ? 'opacity-40' : 'opacity-25'
+          isScrolling ? 'opacity-50' : 'opacity-30'
         }`}
         style={{
           backgroundImage: `
-            linear-gradient(rgba(80, 65, 188, 0.08) 1px, transparent 1px),
-            linear-gradient(90deg, rgba(80, 65, 188, 0.08) 1px, transparent 1px)
+            linear-gradient(rgba(80, 65, 188, 0.12) 1px, transparent 1px),
+            linear-gradient(90deg, rgba(80, 65, 188, 0.12) 1px, transparent 1px),
+            linear-gradient(rgba(108, 99, 255, 0.06) 1px, transparent 1px),
+            linear-gradient(90deg, rgba(108, 99, 255, 0.06) 1px, transparent 1px)
           `,
-          backgroundSize: '50px 50px',
-          transform: `translateY(${scrollY * 0.005}px)`
+          backgroundSize: '60px 60px, 60px 60px, 20px 20px, 20px 20px',
+          transform: `translateY(${scrollY * 0.008}px) perspective(1000px) rotateX(${mouseY * 2}deg)`
         }}
-      ></div>
+      />
 
-      {/* Professional Corner Elements */}
+      {/* Floating Geometric Shapes */}
       <div 
-        className={`absolute top-0 left-0 w-48 h-48 border-l-2 border-t-2 border-[#5041BC]/20 transition-all duration-800 ease-out ${
-          isScrolling ? 'border-[#5041BC]/35' : 'border-[#5041BC]/20'
+        className={`absolute inset-0 transition-all duration-2000 ease-out`}
+        style={{
+          transform: `translateX(${mouseX * 20}px) translateY(${mouseY * 20}px)`
+        }}
+      >
+        {/* Large floating hexagon */}
+        <div 
+          className={`absolute top-1/6 left-1/4 w-24 h-24 border-2 border-[#5041BC]/20 transition-all duration-1000 ease-out ${
+            isScrolling ? 'border-[#5041BC]/40 scale-110' : 'border-[#5041BC]/20 scale-100'
+          }`}
+          style={{
+            clipPath: 'polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%)',
+            transform: `translateY(${scrollY * 0.01}px) rotate(${scrollY * 0.05}deg)`,
+            animation: 'float 6s ease-in-out infinite'
+          }}
+        />
+
+        {/* Animated triangles */}
+        <div 
+          className={`absolute top-2/3 right-1/4 w-16 h-16 border-2 border-[#6C63FF]/25 transition-all duration-800 ease-out ${
+            isScrolling ? 'border-[#6C63FF]/45 scale-125' : 'border-[#6C63FF]/25 scale-100'
+          }`}
+          style={{
+            clipPath: 'polygon(50% 0%, 0% 100%, 100% 100%)',
+            transform: `translateY(${scrollY * -0.012}px) rotate(${scrollY * -0.03}deg)`,
+            animation: 'float 8s ease-in-out infinite reverse'
+          }}
+        />
+
+        {/* Rotating pentagon */}
+        <div 
+          className={`absolute bottom-1/4 left-1/6 w-20 h-20 border-2 border-[#A26AEA]/20 transition-all duration-1200 ease-out ${
+            isScrolling ? 'border-[#A26AEA]/40 scale-115' : 'border-[#A26AEA]/20 scale-100'
+          }`}
+          style={{
+            clipPath: 'polygon(50% 0%, 100% 38%, 82% 100%, 18% 100%, 0% 38%)',
+            transform: `translateY(${scrollY * 0.008}px) rotate(${scrollY * 0.04}deg)`,
+            animation: 'float 10s ease-in-out infinite'
+          }}
+        />
+      </div>
+
+      {/* Responsive Corner Gradients */}
+      <div 
+        className={`absolute top-0 left-0 w-72 h-72 transition-all duration-1000 ease-out ${
+          isScrolling ? 'opacity-60' : 'opacity-40'
         }`}
         style={{
-          transform: `translateY(${scrollY * 0.01}px)`
+          background: `radial-gradient(circle at 0% 0%, rgba(80, 65, 188, 0.15) 0%, transparent 70%)`,
+          transform: `translateY(${scrollY * 0.015}px) scale(${1 + mouseX * 0.1})`
         }}
-      ></div>
+      />
       
       <div 
-        className={`absolute bottom-0 right-0 w-32 h-32 border-r-2 border-b-2 border-[#6C63FF]/20 transition-all duration-800 ease-out ${
-          isScrolling ? 'border-[#6C63FF]/35' : 'border-[#6C63FF]/20'
+        className={`absolute bottom-0 right-0 w-80 h-80 transition-all duration-1000 ease-out ${
+          isScrolling ? 'opacity-60' : 'opacity-40'
         }`}
         style={{
-          transform: `translateY(${scrollY * -0.01}px)`
+          background: `radial-gradient(circle at 100% 100%, rgba(108, 99, 255, 0.12) 0%, transparent 70%)`,
+          transform: `translateY(${scrollY * -0.015}px) scale(${1 + mouseY * 0.1})`
         }}
-      ></div>
+      />
 
-      {/* Subtle Center Accent */}
-      <div 
-        className={`absolute top-1/2 left-1/2 w-96 h-96 bg-gradient-to-br from-[#5041BC]/8 via-[#6C63FF]/5 to-[#A26AEA]/8 rounded-full blur-3xl transition-all duration-1000 ease-out ${
-          isScrolling ? 'scale-125 opacity-60' : 'scale-100 opacity-40'
-        }`}
-        style={{
-          transform: `translate(-50%, -50%) translateY(${scrollY * 0.002}px)`
-        }}
-      ></div>
+      {/* Dynamic Parallax Dots */}
+      <div className="absolute inset-0">
+        {Array.from({ length: 12 }).map((_, i) => (
+          <div
+            key={i}
+            className={`absolute w-3 h-3 rounded-full transition-all duration-1000 ease-out ${
+              isScrolling ? 'scale-150 opacity-80' : 'scale-100 opacity-50'
+            }`}
+            style={{
+              left: `${15 + (i * 7)}%`,
+              top: `${20 + (i * 5)}%`,
+              backgroundColor: [
+                'rgba(80, 65, 188, 0.4)',
+                'rgba(108, 99, 255, 0.4)',
+                'rgba(162, 106, 234, 0.4)'
+              ][i % 3],
+              transform: `translateY(${scrollY * (0.003 + i * 0.001)}px) translateX(${mouseX * (10 + i * 2)}px)`,
+              animation: `float ${4 + i * 0.5}s ease-in-out infinite ${i * 0.5}s`
+            }}
+          />
+        ))}
+      </div>
 
-      {/* Professional Lines */}
+      {/* Flowing Lines with Mouse Interaction */}
       <div 
-        className={`absolute top-1/4 right-1/4 w-24 h-px bg-gradient-to-r from-transparent via-[#5041BC]/40 to-transparent transition-all duration-700 ease-out ${
-          isScrolling ? 'scale-125 opacity-70' : 'scale-100 opacity-40'
+        className={`absolute inset-0 transition-all duration-800 ease-out ${
+          isScrolling ? 'opacity-70' : 'opacity-40'
         }`}
         style={{
-          transform: `translateY(${scrollY * 0.008}px)`
+          transform: `translateX(${mouseX * 30}px) translateY(${mouseY * 20}px)`
         }}
-      ></div>
+      >
+        <svg className="absolute inset-0 w-full h-full" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <linearGradient id="lineGradient1" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stopColor="rgba(80, 65, 188, 0.4)" />
+              <stop offset="50%" stopColor="rgba(108, 99, 255, 0.3)" />
+              <stop offset="100%" stopColor="transparent" />
+            </linearGradient>
+            <linearGradient id="lineGradient2" x1="100%" y1="0%" x2="0%" y2="100%">
+              <stop offset="0%" stopColor="rgba(162, 106, 234, 0.4)" />
+              <stop offset="50%" stopColor="rgba(108, 99, 255, 0.2)" />
+              <stop offset="100%" stopColor="transparent" />
+            </linearGradient>
+          </defs>
+          
+          <path
+            d={`M 0,${100 + mouseY * 50} Q ${300 + mouseX * 100},${50 + mouseY * 30} ${600 + mouseX * 80},${120 + mouseY * 40}`}
+            stroke="url(#lineGradient1)"
+            strokeWidth="2"
+            fill="none"
+            opacity="0.6"
+          />
+          
+          <path
+            d={`M ${window.innerWidth || 1200},${200 + mouseY * 60} Q ${800 - mouseX * 120},${100 + mouseY * 40} ${400 - mouseX * 60},${180 + mouseY * 50}`}
+            stroke="url(#lineGradient2)"
+            strokeWidth="2"
+            fill="none"
+            opacity="0.5"
+          />
+        </svg>
+      </div>
+
+      {/* Professional Corner Borders with Animation */}
+      <div 
+        className={`absolute top-0 left-0 w-64 h-64 border-l-2 border-t-2 transition-all duration-1000 ease-out ${
+          isScrolling ? 'border-[#5041BC]/50' : 'border-[#5041BC]/25'
+        }`}
+        style={{
+          transform: `translateY(${scrollY * 0.02}px) scale(${1 + mouseX * 0.05})`,
+          borderImage: `linear-gradient(135deg, rgba(80, 65, 188, 0.4), transparent) 1`
+        }}
+      />
       
       <div 
-        className={`absolute bottom-1/4 left-1/4 w-32 h-px bg-gradient-to-r from-transparent via-[#6C63FF]/40 to-transparent transition-all duration-700 ease-out ${
-          isScrolling ? 'scale-125 opacity-70' : 'scale-100 opacity-40'
+        className={`absolute bottom-0 right-0 w-48 h-48 border-r-2 border-b-2 transition-all duration-1000 ease-out ${
+          isScrolling ? 'border-[#6C63FF]/50' : 'border-[#6C63FF]/25'
         }`}
         style={{
-          transform: `translateY(${scrollY * -0.008}px)`
+          transform: `translateY(${scrollY * -0.02}px) scale(${1 + mouseY * 0.05})`,
+          borderImage: `linear-gradient(-45deg, rgba(108, 99, 255, 0.4), transparent) 1`
         }}
-      ></div>
+      />
 
-      {/* Minimal Dots */}
+      {/* Morphing Background Shapes */}
       <div 
-        className={`absolute top-1/3 left-1/6 w-2 h-2 bg-[#5041BC]/50 rounded-full transition-all duration-600 ease-out ${
-          isScrolling ? 'scale-200 opacity-80' : 'scale-100 opacity-50'
+        className={`absolute top-1/2 left-1/2 w-96 h-96 transition-all duration-2000 ease-out ${
+          isScrolling ? 'scale-125 opacity-60' : 'scale-100 opacity-30'
         }`}
         style={{
-          transform: `translateY(${scrollY * 0.005}px)`
+          background: `conic-gradient(from ${scrollY * 0.1}deg, rgba(80, 65, 188, 0.1), rgba(108, 99, 255, 0.08), rgba(162, 106, 234, 0.1), rgba(80, 65, 188, 0.1))`,
+          borderRadius: `${40 + mouseX * 20}% ${60 - mouseX * 20}% ${40 + mouseY * 20}% ${60 - mouseY * 20}%`,
+          transform: `translate(-50%, -50%) translateY(${scrollY * 0.005}px) rotate(${scrollY * 0.02}deg)`,
+          filter: 'blur(60px)'
         }}
-      ></div>
-      
-      <div 
-        className={`absolute bottom-1/3 right-1/6 w-2 h-2 bg-[#6C63FF]/50 rounded-full transition-all duration-600 ease-out ${
-          isScrolling ? 'scale-200 opacity-80' : 'scale-100 opacity-50'
-        }`}
-        style={{
-          transform: `translateY(${scrollY * -0.005}px)`
-        }}
-      ></div>
+      />
 
-      <div 
-        className={`absolute top-2/3 right-1/3 w-2 h-2 bg-[#A26AEA]/50 rounded-full transition-all duration-600 ease-out ${
-          isScrolling ? 'scale-200 opacity-80' : 'scale-100 opacity-50'
-        }`}
-        style={{
-          transform: `translateY(${scrollY * 0.003}px)`
-        }}
-      ></div>
-
-      {/* Subtle Border Accents */}
-      <div 
-        className={`absolute top-0 right-1/4 w-16 h-px bg-gradient-to-r from-transparent via-[#5041BC]/30 to-transparent transition-all duration-500 ease-out ${
-          isScrolling ? 'opacity-50' : 'opacity-30'
-        }`}
-        style={{
-          transform: `translateY(${scrollY * 0.003}px)`
-        }}
-      ></div>
-      
-      <div 
-        className={`absolute bottom-0 left-1/3 w-20 h-px bg-gradient-to-r from-transparent via-[#6C63FF]/30 to-transparent transition-all duration-500 ease-out ${
-          isScrolling ? 'opacity-50' : 'opacity-30'
-        }`}
-        style={{
-          transform: `translateY(${scrollY * -0.003}px)`
-        }}
-      ></div>
-
-      {/* Professional Geometric Shapes */}
-      <div 
-        className={`absolute top-1/6 right-1/6 w-8 h-8 border-2 border-[#5041BC]/25 transform rotate-45 transition-all duration-800 ease-out ${
-          isScrolling ? 'scale-110 border-[#5041BC]/45 rotate-90' : 'scale-100 rotate-45'
-        }`}
-        style={{
-          transform: `translateY(${scrollY * 0.004}px) rotate(${45 + scrollY * 0.002}deg)`
-        }}
-      ></div>
-      
-      <div 
-        className={`absolute bottom-1/6 left-1/6 w-6 h-6 border-2 border-[#6C63FF]/25 transform rotate-12 transition-all duration-800 ease-out ${
-          isScrolling ? 'scale-110 border-[#6C63FF]/45 -rotate-12' : 'scale-100 rotate-12'
-        }`}
-        style={{
-          transform: `translateY(${scrollY * -0.004}px) rotate(${12 - scrollY * 0.002}deg)`
-        }}
-      ></div>
-
-      {/* Additional Visible Elements */}
-      <div 
-        className={`absolute top-1/2 left-1/4 w-12 h-12 border border-[#A26AEA]/30 rounded-full transition-all duration-700 ease-out ${
-          isScrolling ? 'scale-125 border-[#A26AEA]/50' : 'scale-100'
-        }`}
-        style={{
-          transform: `translateY(${scrollY * 0.006}px)`
-        }}
-      ></div>
-      
-      <div 
-        className={`absolute bottom-1/2 right-1/4 w-10 h-10 border border-[#5041BC]/30 rounded-full transition-all duration-700 ease-out ${
-          isScrolling ? 'scale-125 border-[#5041BC]/50' : 'scale-100'
-        }`}
-        style={{
-          transform: `translateY(${scrollY * -0.006}px)`
-        }}
-      ></div>
+      {/* CSS Animations */}
+      <style jsx>{`
+        @keyframes float {
+          0%, 100% { transform: translateY(0px) rotate(0deg); }
+          33% { transform: translateY(-10px) rotate(2deg); }
+          66% { transform: translateY(-5px) rotate(-1deg); }
+        }
+        
+        @media (max-width: 768px) {
+          .absolute {
+            transform: scale(0.8) !important;
+          }
+        }
+        
+        @media (prefers-reduced-motion: reduce) {
+          * {
+            animation-duration: 0.01ms !important;
+            animation-iteration-count: 1 !important;
+            transition-duration: 0.01ms !important;
+          }
+        }
+      `}</style>
     </div>
   );
-} 
+}

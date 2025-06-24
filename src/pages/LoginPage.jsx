@@ -1,10 +1,17 @@
 import React, { useState } from 'react'
+import axios from 'axios'
+import { useNavigate } from 'react-router-dom'
 
 function LoginPage() {
+  const navigate = useNavigate()
   const [formData, setFormData] = useState({
     username: '',
     password: ''
   })
+  const [loading, setLoading] = useState(false)
+  const [message, setMessage] = useState('')
+
+  const API_BASE_URL = 'http://localhost:3000/api'
 
   const handleInputChange = (e) => {
     const { name, value } = e.target
@@ -14,10 +21,27 @@ function LoginPage() {
     }))
   }
 
-  const handleSubmit = (e) => {
+  const handleAdminLogin = async (e) => {
     e.preventDefault()
-    console.log('Login attempt:', formData)
-    // Here you would typically make an API call to authenticate the user
+    setLoading(true)
+    setMessage('')
+
+    try {
+      const response = await axios.post(`${API_BASE_URL}/admin/login`, {
+        username: formData.username,
+        password: formData.password
+      })
+
+      if (response.data.success) {
+        localStorage.setItem('adminToken', response.data.token)
+        localStorage.setItem('userType', 'admin')
+        navigate('/admin')
+      }
+    } catch (error) {
+      setMessage(error.response?.data?.message || 'Login failed')
+    } finally {
+      setLoading(false)
+    }
   }
 
   return (
@@ -51,9 +75,20 @@ function LoginPage() {
           <rect width="100%" height="100%" fill="url(#wavy)" />
         </svg>
         <div className="w-full max-w-sm rounded-2xl border border-gray-100 shadow-2xl p-8 flex flex-col items-center relative z-10" style={{background: 'linear-gradient(135deg, #5041BC 0%, #A26AEA 100%)'}}>
-          <h2 className="text-2xl font-bold text-white mb-1 text-center tracking-tight relative z-10">Admin Login</h2>
-          <p className="text-gray-100 text-center mb-6 text-sm relative z-10">Please enter your credentials to continue</p>
-          <form className="w-full space-y-4 relative z-10" onSubmit={handleSubmit}>
+          <h2 className="text-2xl font-bold text-white mb-1 text-center tracking-tight relative z-10">
+            Admin Login
+          </h2>
+          <p className="text-gray-100 text-center mb-6 text-sm relative z-10">
+            Please enter your credentials to continue
+          </p>
+
+          {message && (
+            <div className="w-full p-3 rounded-lg mb-4 text-sm bg-red-100 text-red-800">
+              {message}
+            </div>
+          )}
+
+          <form className="w-full space-y-4 relative z-10" onSubmit={handleAdminLogin}>
             <div>
               <label htmlFor="username" className="block text-xs text-white mb-1 font-semibold tracking-wide">
                 Username
@@ -84,12 +119,15 @@ function LoginPage() {
                 onChange={handleInputChange}
               />
             </div>
+            
             <button
               type="submit"
-              className="w-full py-2 rounded-lg bg-[#5041BC] text-white font-semibold text-base shadow-md hover:bg-[#A26AEA] transition-colors mt-2"
+              disabled={loading}
+              className="w-full py-2 rounded-lg bg-[#5041BC] text-white font-semibold text-base shadow-md hover:bg-[#A26AEA] transition-colors mt-2 disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              Login
+              {loading ? 'Loading...' : 'Login'}
             </button>
+            
             <div className="flex justify-end mt-2">
               <a href="#" className="text-xs text-white hover:underline transition-colors">Forgot password?</a>
             </div>
