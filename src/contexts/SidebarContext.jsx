@@ -11,7 +11,7 @@ export const useSidebar = () => {
 };
 
 export const SidebarProvider = ({ children }) => {
-  const [isMinimized, setIsMinimized] = useState(false);
+  const [isMinimized, setIsMinimized] = useState(true);
 
   const toggleSidebar = () => {
     setIsMinimized(!isMinimized);

@@ -3,6 +3,7 @@ import axios from 'axios';
 import Sidebar from '../components/Sidebar';
 import PageBackground from '../components/PageBackground';
 import ProfileButton from '../components/ProfileButton';
+import DeleteConfirmModal from '../components/DeleteConfirmModal';
 import { useSidebar } from '../contexts/SidebarContext';
 import { FiPlus, FiTrash2, FiEdit, FiMapPin, FiLoader, FiAlertTriangle, FiX, FiMap } from 'react-icons/fi';
 
@@ -34,6 +35,7 @@ export default function AreaPage() {
   const [showEditForm, setShowEditForm] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [areaToDelete, setAreaToDelete] = useState(null);
+  const [deleting, setDeleting] = useState(false);
 
   useEffect(() => {
     fetchData();
@@ -121,6 +123,7 @@ export default function AreaPage() {
   const confirmDelete = async () => {
     if (areaToDelete) {
       try {
+        setDeleting(true);
         await api.delete(`/areas/${areaToDelete._id}`);
         setShowDeleteConfirm(false);
         setAreaToDelete(null);
@@ -128,13 +131,17 @@ export default function AreaPage() {
       } catch (error) {
         setError('Failed to delete area.');
         console.error('Error deleting area:', error);
+      } finally {
+        setDeleting(false);
       }
     }
   };
 
   const cancelDelete = () => {
-    setShowDeleteConfirm(false);
-    setAreaToDelete(null);
+    if (!deleting) {
+      setShowDeleteConfirm(false);
+      setAreaToDelete(null);
+    }
   };
 
   const resetForm = () => {
@@ -150,29 +157,34 @@ export default function AreaPage() {
       <div className="fixed left-0 top-0 h-screen z-10">
         <Sidebar />
       </div>
-      <div className={`relative z-20 ${isMinimized ? 'ml-20' : 'ml-72'} flex flex-col min-h-screen transition-all duration-500 ease-in-out`}>
+      <div className={`relative z-20 ${isMinimized ? 'ml-16' : 'ml-56'} flex flex-col min-h-screen transition-all duration-300 ease-in-out`}>
         {/* Profile Button - Top Right */}
-        <div className="absolute top-6 right-6 z-30">
+        <div className="absolute top-4 right-4 z-30">
           <ProfileButton />
         </div>
         
-        <div className="flex-1 flex flex-col p-8 pt-20">
-          <main className="flex-1 min-w-0 mt-8">
-            <div className="flex justify-between items-center mb-6">
-              <h2 className="text-3xl font-extrabold text-[#5041BC]">Area Management</h2>
-              <button 
-                onClick={() => setShowCreateForm(true)}
-                className="flex items-center space-x-2 text-sm font-medium text-white bg-gradient-to-r from-[#5041BC] to-[#6C63FF] hover:from-[#6C63FF] hover:to-[#5041BC] rounded-lg px-4 py-2.5 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105"
-              >
-                <FiPlus className="w-4 h-4" />
-                <span>Create Area</span>
-              </button>
+        <div className="flex-1 flex flex-col p-4 pt-16">
+          <main className="flex-1 min-w-0 mt-4">
+            {/* Heading */}
+            <h2 className="text-2xl font-extrabold bg-gradient-to-r from-[#5041BC] via-[#6C63FF] to-[#8B7EFF] bg-clip-text text-transparent mb-4">Area Management</h2>
+            {/* Toolbar */}
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-4">
+              <div className="flex items-center w-full sm:w-auto gap-2">
+                {/* Empty space for consistency with UserPage layout */}
+              </div>
+              <div className="flex items-center gap-2 sm:gap-3">
+                <button 
+                  onClick={() => setShowCreateForm(true)}
+                  className="flex items-center space-x-2 text-sm font-medium text-white bg-gradient-to-r from-[#5041BC] to-[#6C63FF] hover:from-[#6C63FF] hover:to-[#5041BC] rounded-lg px-3 py-2 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105"
+                >
+                  <FiPlus className="w-4 h-4" />
+                  <span>Create Area</span>
+                </button>
+              </div>
             </div>
-            
 
-
-            {/* Areas List */}
-            <div className="bg-white rounded-2xl shadow-lg p-8">
+            {/* Area Table */}
+            <div className="bg-white rounded-xl shadow-lg p-4">
               {loading ? (
                 <div className="flex justify-center items-center py-12">
                   <FiLoader className="animate-spin text-4xl text-[#5041BC]" />
@@ -190,33 +202,66 @@ export default function AreaPage() {
                   <p>Create a new area to get started.</p>
                 </div>
               ) : (
-                <div className="space-y-4">
-                  {areas.map(area => (
-                    <div key={area._id} className="flex items-center justify-between bg-gray-50 rounded-lg p-4 shadow-sm hover:shadow-md transition-all duration-300">
-                      <div>
-                        <div className="font-bold text-lg text-[#5041BC]">{area.title}</div>
-                        <div className="text-sm text-gray-500">
-                          District: <span className="font-semibold">{area.district?.title || 'N/A'}</span>
-                        </div>
-                      </div>
-                      <div className="flex items-center gap-3">
-                        <button
-                          onClick={() => handleEdit(area)} 
-                          className="p-2 text-gray-400 hover:text-green-500 transition-colors"
-                          title="Edit Area"
-                        >
-                          <FiEdit className="w-5 h-5" />
-                        </button>
-                        <button
-                          onClick={() => handleDeleteArea(area)}
-                          className="p-2 text-gray-400 hover:text-red-500 transition-colors"
-                          title="Delete Area"
-                        >
-                          <FiTrash2 className="w-5 h-5" />
-                        </button>
-                      </div>
-                    </div>
-                  ))}
+                <div className="overflow-x-auto">
+                  <table className="w-full">
+                    <thead>
+                      <tr className="border-b border-gray-200">
+                        <th className="text-left py-3 px-2 font-bold text-gray-700 text-sm uppercase tracking-wide">AREA</th>
+                        <th className="text-left py-3 px-2 font-bold text-gray-700 text-sm uppercase tracking-wide">DISTRICT</th>
+                        <th className="text-left py-3 px-2 font-bold text-gray-700 text-sm uppercase tracking-wide">CREATED</th>
+                        <th className="text-center py-3 px-2 font-bold text-gray-700 text-sm uppercase tracking-wide">ACTIONS</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {areas.map((area, index) => (
+                        <tr key={area._id} className={`border-b border-gray-100 hover:bg-gray-50 transition-colors ${index % 2 === 0 ? 'bg-white' : 'bg-gray-50/50'}`}>
+                          <td className="py-3 px-2">
+                            <div className="flex items-center gap-2">
+                              <div className="w-8 h-8 rounded-full bg-[#5041BC] flex items-center justify-center text-white font-semibold text-sm">
+                                {area.title?.charAt(0)?.toUpperCase() || 'A'}
+                              </div>
+                              <div>
+                                <div className="font-semibold text-gray-900 text-sm">{area.title}</div>
+                                <div className="text-xs text-gray-500">ID: {area._id?.slice(-6) || 'N/A'}</div>
+                              </div>
+                            </div>
+                          </td>
+                          <td className="py-3 px-2">
+                            <div className="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-blue-100 text-blue-800">
+                              {area.district?.title || 'N/A'}
+                            </div>
+                          </td>
+                          <td className="py-3 px-2">
+                            <span className="text-sm text-gray-600">
+                              {new Date(area.createdAt).toLocaleDateString('en-US', { 
+                                month: 'short', 
+                                day: 'numeric',
+                                year: 'numeric'
+                              })}
+                            </span>
+                          </td>
+                          <td className="py-3 px-2">
+                            <div className="flex items-center justify-center gap-1">
+                              <button
+                                onClick={() => handleEdit(area)} 
+                                className="p-1.5 text-gray-400 hover:text-green-600 hover:bg-green-50 rounded transition-all duration-200"
+                                title="Edit Area"
+                              >
+                                <FiEdit className="w-4 h-4" />
+                              </button>
+                              <button
+                                onClick={() => handleDeleteArea(area)}
+                                className="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded transition-all duration-200"
+                                title="Delete Area"
+                              >
+                                <FiTrash2 className="w-4 h-4" />
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
                 </div>
               )}
             </div>
@@ -240,23 +285,18 @@ export default function AreaPage() {
           <div className="flex min-h-full items-center justify-center p-4">
             <div className="relative bg-white rounded-lg shadow-lg w-full max-w-lg">
               {/* Modal Header - Gradient */}
-              <div className="bg-gradient-to-r from-[#5041BC] to-[#6C63FF] px-4 py-4 rounded-t-lg">
+              <div className="bg-gradient-to-r from-[#5041BC] to-[#6C63FF] px-4 py-3 rounded-t-lg">
                 <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 bg-white/20 rounded-lg flex items-center justify-center backdrop-blur-sm">
-                      <FiMapPin className="w-4 h-4 text-white" />
-                    </div>
-                    <div>
-                      <h3 className="text-lg font-semibold text-white">Create Area</h3>
-                      <p className="text-white/80 text-sm">Add a new area</p>
-                    </div>
+                  <div className="flex items-center gap-2">
+                    <FiMapPin className="w-4 h-4 text-white" />
+                    <h3 className="text-lg font-semibold text-white">Create Area</h3>
                   </div>
                   <button
                     onClick={() => {
                       setShowCreateForm(false);
                       resetForm();
                     }}
-                    className="text-white/80 hover:text-white hover:bg-white/20 p-2 rounded-lg transition-all duration-200"
+                    className="text-white/80 hover:text-white p-1"
                   >
                     <FiX className="w-5 h-5" />
                   </button>
@@ -265,20 +305,17 @@ export default function AreaPage() {
 
               {/* Modal Body */}
               <form onSubmit={handleCreateArea} className="p-4">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="grid grid-cols-2 gap-3">
                   {/* District */}
-                  <div className="space-y-1">
-                    <label htmlFor="modal-district" className="block text-sm font-medium text-gray-700">
-                      District *
-                    </label>
+                  <div>
+                    <label className="block text-xs font-medium text-gray-700 mb-1">District *</label>
                     <select
-                      id="modal-district"
                       value={selectedDistrict}
                       onChange={(e) => setSelectedDistrict(e.target.value)}
                       required
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-[#5041BC] focus:border-[#5041BC] bg-white"
+                      className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-[#5041BC] bg-white"
                     >
-                      <option value="">Select a District</option>
+                      <option value="">Select district</option>
                       {districts.map(district => (
                         <option key={district._id} value={district._id}>{district.title}</option>
                       ))}
@@ -286,39 +323,36 @@ export default function AreaPage() {
                   </div>
 
                   {/* Area Name */}
-                  <div className="space-y-1">
-                    <label htmlFor="modal-area-name" className="block text-sm font-medium text-gray-700">
-                      Area Name *
-                    </label>
+                  <div>
+                    <label className="block text-xs font-medium text-gray-700 mb-1">Area Name *</label>
                     <input
                       type="text"
-                      id="modal-area-name"
                       value={newAreaName}
                       onChange={(e) => setNewAreaName(e.target.value)}
                       required
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-[#5041BC] focus:border-[#5041BC]"
+                      className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-[#5041BC]"
                       placeholder="Enter area name"
                     />
                   </div>
                 </div>
 
                 {/* Form Actions */}
-                <div className="flex gap-3 pt-4 justify-end border-t border-gray-200 mt-4">
+                <div className="flex gap-2 pt-3 justify-end border-t border-gray-200 mt-3">
                   <button
                     type="button"
                     onClick={() => {
                       setShowCreateForm(false);
                       resetForm();
                     }}
-                    className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 font-medium"
+                    className="px-3 py-1.5 text-xs border border-gray-300 rounded text-gray-700 hover:bg-gray-50"
                   >
                     Cancel
                   </button>
                   <button
                     type="submit"
-                    className="px-4 py-2 bg-[#5041BC] text-white rounded-md hover:bg-[#6C63FF] font-medium"
+                    className="px-3 py-1.5 text-xs bg-[#5041BC] text-white rounded hover:bg-[#6C63FF]"
                   >
-                    Create Area
+                    Create
                   </button>
                 </div>
               </form>
@@ -343,23 +377,18 @@ export default function AreaPage() {
           <div className="flex min-h-full items-center justify-center p-4">
             <div className="relative bg-white rounded-lg shadow-lg w-full max-w-lg">
               {/* Modal Header - Gradient */}
-              <div className="bg-gradient-to-r from-violet-500 to-violet-600 px-4 py-4 rounded-t-lg">
+              <div className="bg-gradient-to-r from-violet-500 to-violet-600 px-4 py-3 rounded-t-lg">
                 <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 bg-white/20 rounded-lg flex items-center justify-center backdrop-blur-sm">
-                      <FiEdit className="w-4 h-4 text-white" />
-                    </div>
-                    <div>
-                      <h3 className="text-lg font-semibold text-white">Edit Area</h3>
-                      <p className="text-white/80 text-sm">Update area information</p>
-                    </div>
+                  <div className="flex items-center gap-2">
+                    <FiEdit className="w-4 h-4 text-white" />
+                    <h3 className="text-lg font-semibold text-white">Edit Area</h3>
                   </div>
                   <button
                     onClick={() => {
                       setShowEditForm(false);
                       cancelEdit();
                     }}
-                    className="text-white/80 hover:text-white hover:bg-white/20 p-2 rounded-lg transition-all duration-200"
+                    className="text-white/80 hover:text-white p-1"
                   >
                     <FiX className="w-5 h-5" />
                   </button>
@@ -368,20 +397,17 @@ export default function AreaPage() {
 
               {/* Modal Body */}
               <form onSubmit={handleUpdateArea} className="p-4">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="grid grid-cols-2 gap-3">
                   {/* District */}
-                  <div className="space-y-1">
-                    <label htmlFor="edit-district" className="block text-sm font-medium text-gray-700">
-                      District *
-                    </label>
+                  <div>
+                    <label className="block text-xs font-medium text-gray-700 mb-1">District *</label>
                     <select
-                      id="edit-district"
                       value={selectedDistrict}
                       onChange={(e) => setSelectedDistrict(e.target.value)}
                       required
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-violet-600 focus:border-violet-600 bg-white"
+                      className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-violet-600 bg-white"
                     >
-                      <option value="">Select a District</option>
+                      <option value="">Select district</option>
                       {districts.map(district => (
                         <option key={district._id} value={district._id}>{district.title}</option>
                       ))}
@@ -389,39 +415,36 @@ export default function AreaPage() {
                   </div>
 
                   {/* Area Name */}
-                  <div className="space-y-1">
-                    <label htmlFor="edit-area-name" className="block text-sm font-medium text-gray-700">
-                      Area Name *
-                    </label>
+                  <div>
+                    <label className="block text-xs font-medium text-gray-700 mb-1">Area Name *</label>
                     <input
                       type="text"
-                      id="edit-area-name"
                       value={newAreaName}
                       onChange={(e) => setNewAreaName(e.target.value)}
                       required
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-violet-600 focus:border-violet-600"
+                      className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-violet-600"
                       placeholder="Enter area name"
                     />
                   </div>
                 </div>
 
                 {/* Form Actions */}
-                <div className="flex gap-3 pt-4 justify-end border-t border-gray-200 mt-4">
+                <div className="flex gap-2 pt-3 justify-end border-t border-gray-200 mt-3">
                   <button
                     type="button"
                     onClick={() => {
                       setShowEditForm(false);
                       cancelEdit();
                     }}
-                    className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 font-medium"
+                    className="px-3 py-1.5 text-xs border border-gray-300 rounded text-gray-700 hover:bg-gray-50"
                   >
                     Cancel
                   </button>
                   <button
                     type="submit"
-                    className="px-4 py-2 bg-violet-600 text-white rounded-md hover:bg-indigo-600 font-medium"
+                    className="px-3 py-1.5 text-xs bg-violet-600 text-white rounded hover:bg-indigo-600"
                   >
-                    Update Area
+                    Update
                   </button>
                 </div>
               </form>
@@ -431,63 +454,14 @@ export default function AreaPage() {
       )}
 
       {/* Delete Confirmation Modal */}
-      {showDeleteConfirm && (
-        <div className="fixed inset-0 z-50 overflow-y-auto">
-          {/* Backdrop */}
-          <div 
-            className="fixed inset-0 bg-black/50"
-            onClick={cancelDelete}
-          ></div>
-          
-          {/* Modal container */}
-          <div className="flex min-h-full items-center justify-center p-4">
-            <div className="relative bg-white rounded-lg shadow-lg w-full max-w-md">
-              {/* Modal Header - Light Red Gradient */}
-              <div className="bg-gradient-to-r from-red-400 to-red-500 px-4 py-3 rounded-t-lg">
-                <div className="flex items-center gap-3">
-                  <div className="w-7 h-7 bg-white/20 rounded-lg flex items-center justify-center backdrop-blur-sm">
-                    <FiAlertTriangle className="w-4 h-4 text-white" />
-                  </div>
-                  <div>
-                    <h3 className="text-base font-semibold text-white">Confirm Delete</h3>
-                    <p className="text-white/80 text-xs">This action cannot be undone</p>
-                  </div>
-                </div>
-              </div>
-
-              {/* Modal Body */}
-              <div className="p-4">
-                <div className="mb-4">
-                  <p className="text-gray-600 text-sm mb-3">
-                    Are you sure you want to delete this area?
-                  </p>
-                  {areaToDelete && (
-                    <div className="bg-red-50 rounded-lg p-3 border-l-4 border-red-300">
-                      <div className="font-semibold text-gray-900">{areaToDelete.title}</div>
-                    </div>
-                  )}
-                </div>
-
-                {/* Actions */}
-                <div className="flex gap-3 justify-end">
-                  <button
-                    onClick={cancelDelete}
-                    className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 font-medium"
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    onClick={confirmDelete}
-                    className="px-4 py-2 bg-red-500 text-white rounded-md hover:bg-red-600 font-medium"
-                  >
-                    Delete
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
+      <DeleteConfirmModal
+        isOpen={showDeleteConfirm}
+        onClose={cancelDelete}
+        onConfirm={confirmDelete}
+        itemName={areaToDelete?.title}
+        itemType="Area"
+        loading={deleting}
+      />
     </div>
   );
 } 

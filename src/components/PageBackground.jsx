@@ -49,11 +49,9 @@ export default function PageBackground() {
         }}
       />
 
-      {/* Enhanced Grid Pattern with Perspective */}
+      {/* Static Grid Pattern */}
       <div 
-        className={`absolute inset-0 transition-all duration-1000 ease-out ${
-          isScrolling ? 'opacity-50' : 'opacity-30'
-        }`}
+        className="absolute inset-0 opacity-25"
         style={{
           backgroundImage: `
             linear-gradient(rgba(80, 65, 188, 0.12) 1px, transparent 1px),
@@ -61,8 +59,7 @@ export default function PageBackground() {
             linear-gradient(rgba(108, 99, 255, 0.06) 1px, transparent 1px),
             linear-gradient(90deg, rgba(108, 99, 255, 0.06) 1px, transparent 1px)
           `,
-          backgroundSize: '60px 60px, 60px 60px, 20px 20px, 20px 20px',
-          transform: `translateY(${scrollY * 0.008}px) perspective(1000px) rotateX(${mouseY * 2}deg)`
+          backgroundSize: '60px 60px, 60px 60px, 20px 20px, 20px 20px'
         }}
       />
 
@@ -131,28 +128,7 @@ export default function PageBackground() {
         }}
       />
 
-      {/* Dynamic Parallax Dots */}
-      <div className="absolute inset-0">
-        {Array.from({ length: 12 }).map((_, i) => (
-          <div
-            key={i}
-            className={`absolute w-3 h-3 rounded-full transition-all duration-1000 ease-out ${
-              isScrolling ? 'scale-150 opacity-80' : 'scale-100 opacity-50'
-            }`}
-            style={{
-              left: `${15 + (i * 7)}%`,
-              top: `${20 + (i * 5)}%`,
-              backgroundColor: [
-                'rgba(80, 65, 188, 0.4)',
-                'rgba(108, 99, 255, 0.4)',
-                'rgba(162, 106, 234, 0.4)'
-              ][i % 3],
-              transform: `translateY(${scrollY * (0.003 + i * 0.001)}px) translateX(${mouseX * (10 + i * 2)}px)`,
-              animation: `float ${4 + i * 0.5}s ease-in-out infinite ${i * 0.5}s`
-            }}
-          />
-        ))}
-      </div>
+
 
       {/* Flowing Lines with Mouse Interaction */}
       <div 
@@ -216,18 +192,7 @@ export default function PageBackground() {
         }}
       />
 
-      {/* Morphing Background Shapes */}
-      <div 
-        className={`absolute top-1/2 left-1/2 w-96 h-96 transition-all duration-2000 ease-out ${
-          isScrolling ? 'scale-125 opacity-60' : 'scale-100 opacity-30'
-        }`}
-        style={{
-          background: `conic-gradient(from ${scrollY * 0.1}deg, rgba(80, 65, 188, 0.1), rgba(108, 99, 255, 0.08), rgba(162, 106, 234, 0.1), rgba(80, 65, 188, 0.1))`,
-          borderRadius: `${40 + mouseX * 20}% ${60 - mouseX * 20}% ${40 + mouseY * 20}% ${60 - mouseY * 20}%`,
-          transform: `translate(-50%, -50%) translateY(${scrollY * 0.005}px) rotate(${scrollY * 0.02}deg)`,
-          filter: 'blur(60px)'
-        }}
-      />
+
 
       {/* CSS Animations */}
       <style jsx>{`

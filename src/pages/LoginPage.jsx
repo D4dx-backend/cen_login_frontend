@@ -35,7 +35,7 @@ function LoginPage() {
       if (response.data.success) {
         localStorage.setItem('adminToken', response.data.token)
         localStorage.setItem('userType', 'admin')
-        navigate('/admin')
+        navigate('/user')
       }
     } catch (error) {
       setMessage(error.response?.data?.message || 'Login failed')
