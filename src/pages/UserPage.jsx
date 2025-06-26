@@ -5,7 +5,7 @@ import PageBackground from '../components/PageBackground';
 import UserListTable from '../components/UserListTable';
 import ProfileButton from '../components/ProfileButton';
 import DeleteConfirmModal from '../components/DeleteConfirmModal';
-import { useSidebar } from '../contexts/SidebarContext';
+
 import { FiPlus, FiFilter, FiSearch, FiX, FiUser, FiPhone, FiShield, FiSmartphone, FiEdit, FiAlertTriangle, FiTrash2, FiEye, FiCalendar, FiClock } from 'react-icons/fi';
 
 const API_BASE_URL = 'http://localhost:3000/api';
@@ -25,7 +25,6 @@ api.interceptors.request.use((config) => {
 });
 
 export default function UserPage() {
-  const { isMinimized } = useSidebar();
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [showEditForm, setShowEditForm] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
@@ -305,7 +304,7 @@ export default function UserPage() {
         <Sidebar />
       </div>
       {/* Main content positioned to the right of sidebar */}
-      <div className={`relative z-20 ${isMinimized ? 'ml-16' : 'ml-56'} flex flex-col min-h-screen transition-all duration-300 ease-in-out`}>
+      <div className="relative z-20 flex flex-col min-h-screen transition-all duration-300 ease-in-out" style={{ marginLeft: 'var(--sidebar-width, 224px)' }}>
         {/* Profile Button - Top Right */}
         <div className="absolute top-4 right-4 z-30">
           <ProfileButton />
@@ -316,8 +315,8 @@ export default function UserPage() {
             {/* Heading */}
             <h2 className="text-2xl font-extrabold bg-gradient-to-r from-[#5041BC] via-[#6C63FF] to-[#8B7EFF] bg-clip-text text-transparent mb-4">User Management</h2>
             {/* Toolbar */}
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-4">
-              <div className="flex items-center w-full sm:w-auto gap-2">
+            <div className="flex flex-col gap-3 mb-4 sm:flex-row sm:items-center sm:justify-between sm:gap-2">
+              <div className="flex items-center w-full gap-2 sm:w-auto">
                 <div className="relative w-full sm:w-64">
                   <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
                     <FiSearch className="w-4 h-4" />
@@ -331,13 +330,13 @@ export default function UserPage() {
                   />
                 </div>
               </div>
-              <div className="flex items-center gap-2 sm:gap-3">
+              <div className="flex items-center gap-2 w-full sm:w-auto sm:gap-3">
                 <button 
                   onClick={() => setShowFilterModal(true)}
-                  className="flex items-center space-x-2 text-sm font-medium text-gray-600 bg-gray-100/60 hover:bg-gray-100 rounded-lg px-3 py-2 transition-colors"
+                  className="flex items-center justify-center space-x-2 text-sm font-medium text-gray-600 bg-gray-100/60 hover:bg-gray-100 rounded-lg px-3 py-2 transition-colors flex-1 sm:flex-none"
                 >
                   <FiFilter className="w-4 h-4" />
-                  <span>Filter</span>
+                  <span className="hidden sm:inline">Filter</span>
                   {(filters.userType || filters.userRole || filters.app) && (
                     <span className="bg-[#5041BC] text-white text-xs rounded-full px-1.5 py-0.5 ml-1">
                       {[filters.userType, filters.userRole, filters.app].filter(Boolean).length}
@@ -346,10 +345,11 @@ export default function UserPage() {
                 </button>
                 <button 
                   onClick={() => setShowCreateForm(true)}
-                  className="flex items-center space-x-2 text-sm font-medium text-white bg-gradient-to-r from-[#5041BC] to-[#6C63FF] hover:from-[#6C63FF] hover:to-[#5041BC] rounded-lg px-3 py-2 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105"
+                  className="flex items-center justify-center space-x-2 text-sm font-medium text-white bg-gradient-to-r from-[#5041BC] to-[#6C63FF] hover:from-[#6C63FF] hover:to-[#5041BC] rounded-lg px-3 py-2 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105 flex-1 sm:flex-none"
                 >
                   <FiPlus className="w-4 h-4" />
-                  <span>Create User</span>
+                  <span className="hidden sm:inline">Create User</span>
+                  <span className="sm:hidden">Create</span>
                 </button>
               </div>
             </div>
@@ -360,7 +360,7 @@ export default function UserPage() {
                 onEditUser={handleEditUser} 
                 onDeleteUser={handleDeleteUser} 
                 onViewUser={handleViewUser} 
-                showViewButton={isMinimized}
+                showViewButton={false}
                 searchTerm={searchTerm}
                 filters={filters}
                 ref={userTableRef} 
@@ -578,7 +578,7 @@ export default function UserPage() {
           ></div>
           
           <div className="flex min-h-full items-center justify-center p-4">
-            <div className="relative bg-white rounded-lg shadow-lg w-full max-w-lg">
+            <div className="relative bg-white rounded-lg shadow-lg w-full max-w-lg mx-4">
               <div className="bg-gradient-to-r from-[#5041BC] to-[#6C63FF] px-4 py-3 rounded-t-lg">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
@@ -608,7 +608,7 @@ export default function UserPage() {
                   </div>
                 )}
 
-                <div className="grid grid-cols-2 gap-3">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div>
                     <label className="block text-xs font-medium text-gray-700 mb-1">Username *</label>
                     <input
@@ -671,7 +671,7 @@ export default function UserPage() {
                     </select>
                   </div>
 
-                  <div className="col-span-2">
+                  <div className="sm:col-span-2">
                     <div className="flex items-center justify-between mb-1">
                       <label className="block text-xs font-medium text-gray-700">App *</label>
                       {!appsLoading && (
@@ -721,24 +721,24 @@ export default function UserPage() {
                   </div>
                 </div>
 
-                <div className="flex gap-2 pt-3 justify-end border-t border-gray-200 mt-3">
+                <div className="flex flex-col sm:flex-row gap-2 pt-3 justify-end border-t border-gray-200 mt-3">
                   <button
                     type="button"
                     onClick={() => {
                       setShowCreateForm(false);
                       resetForm();
                     }}
-                    className="px-3 py-1.5 text-xs border border-gray-300 rounded text-gray-700 hover:bg-gray-50"
+                    className="px-3 py-1.5 text-xs border border-gray-300 rounded text-gray-700 hover:bg-gray-50 order-2 sm:order-1"
                   >
                     Cancel
                   </button>
                   <button
                     type="submit"
                     disabled={loading}
-                    className="px-3 py-1.5 text-xs bg-[#5041BC] text-white rounded hover:bg-[#6C63FF] disabled:opacity-50"
+                    className="px-3 py-1.5 text-xs bg-[#5041BC] text-white rounded hover:bg-[#6C63FF] disabled:opacity-50 order-1 sm:order-2"
                   >
                     {loading ? (
-                      <div className="flex items-center gap-1">
+                      <div className="flex items-center gap-1 justify-center">
                         <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-white"></div>
                         Creating...
                       </div>
@@ -767,7 +767,7 @@ export default function UserPage() {
           
           {/* Modal container */}
           <div className="flex min-h-full items-center justify-center p-4">
-            <div className="relative bg-white rounded-lg shadow-md w-full max-w-lg">
+            <div className="relative bg-white rounded-lg shadow-md w-full max-w-lg mx-4">
               {/* Modal Header - Gradient */}
               <div className="bg-gradient-to-r from-violet-500 to-violet-600 px-4 py-3 rounded-t-lg">
                 <div className="flex items-center justify-between">
@@ -804,7 +804,7 @@ export default function UserPage() {
                   </div>
                 )}
 
-                <div className="grid grid-cols-2 gap-3">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   {/* Username */}
                   <div className="space-y-1">
                     <label htmlFor="edit-username" className="block text-xs font-medium text-gray-700">
@@ -884,7 +884,7 @@ export default function UserPage() {
                   </div>
 
                   {/* App */}
-                  <div className="space-y-1 col-span-2">
+                  <div className="space-y-1 sm:col-span-2">
                     <div className="flex items-center justify-between">
                       <label htmlFor="edit-app" className="block text-xs font-medium text-gray-700">
                         App *
@@ -938,24 +938,24 @@ export default function UserPage() {
                 </div>
 
                 {/* Form Actions */}
-                <div className="flex gap-2 pt-3 justify-end border-t border-gray-200 mt-3">
+                <div className="flex flex-col sm:flex-row gap-2 pt-3 justify-end border-t border-gray-200 mt-3">
                   <button
                     type="button"
                     onClick={() => {
                       setShowEditForm(false);
                       resetForm();
                     }}
-                    className="px-3 py-1.5 text-xs border border-gray-300 rounded text-gray-700 hover:bg-gray-50 font-medium"
+                    className="px-3 py-1.5 text-xs border border-gray-300 rounded text-gray-700 hover:bg-gray-50 font-medium order-2 sm:order-1"
                   >
                     Cancel
                   </button>
                   <button
                     type="submit"
                     disabled={loading}
-                    className="px-3 py-1.5 text-xs bg-violet-600 text-white rounded hover:bg-indigo-600 disabled:opacity-50 disabled:cursor-not-allowed font-medium"
+                    className="px-3 py-1.5 text-xs bg-violet-600 text-white rounded hover:bg-indigo-600 disabled:opacity-50 disabled:cursor-not-allowed font-medium order-1 sm:order-2"
                   >
                     {loading ? (
-                      <div className="flex items-center gap-1">
+                      <div className="flex items-center gap-1 justify-center">
                         <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-white"></div>
                         Updating...
                       </div>

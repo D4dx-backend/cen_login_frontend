@@ -121,84 +121,154 @@ const UserListTable = forwardRef(({ onEditUser, onDeleteUser, onViewUser, showVi
 
   return (
     <div>
-      <table className="w-full text-sm text-left text-gray-500">
-        <thead className="text-xs text-gray-700 uppercase bg-gray-50/50">
-          <tr>
-            <th scope="col" className="px-4 py-3 font-semibold">
-              User
-            </th>
-            <th scope="col" className="px-4 py-3 font-semibold">
-              User Type
-            </th>
-            <th scope="col" className="px-4 py-3 font-semibold">
-              Role
-            </th>
-            <th scope="col" className="px-4 py-3 font-semibold">
-              App
-            </th>
-            <th scope="col" className="px-4 py-3 font-semibold text-center">
-              Actions
-            </th>
-          </tr>
-        </thead>
-        <tbody className="divide-y divide-gray-100">
-          {filteredUsers.map((user) => (
-            <tr key={user._id} className="transform transition-transform duration-300 ease-in-out hover:scale-[1.01] hover:shadow-md hover:bg-white rounded-xl">
-              <th scope="row" className="flex items-center px-4 py-3 text-gray-900 whitespace-nowrap">
-                <div className="w-9 h-9 rounded-full bg-[#5041BC] flex items-center justify-center text-white font-semibold text-sm">
+      {/* Desktop Table View - Hidden on mobile */}
+      <div className="hidden lg:block">
+        <table className="w-full text-sm text-left text-gray-500">
+          <thead className="text-xs text-gray-700 uppercase bg-gray-50/50">
+            <tr>
+              <th scope="col" className="px-4 py-3 font-semibold">
+                User
+              </th>
+              <th scope="col" className="px-4 py-3 font-semibold">
+                User Type
+              </th>
+              <th scope="col" className="px-4 py-3 font-semibold">
+                Role
+              </th>
+              <th scope="col" className="px-4 py-3 font-semibold">
+                App
+              </th>
+              <th scope="col" className="px-4 py-3 font-semibold text-center">
+                Actions
+              </th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-gray-100">
+            {filteredUsers.map((user) => (
+              <tr key={user._id} className="transform transition-transform duration-300 ease-in-out hover:scale-[1.01] hover:shadow-md hover:bg-white rounded-xl">
+                <th scope="row" className="flex items-center px-4 py-3 text-gray-900 whitespace-nowrap">
+                  <div className="w-9 h-9 rounded-full bg-[#5041BC] flex items-center justify-center text-white font-semibold text-sm">
+                    {user.username?.charAt(0)?.toUpperCase() || 'U'}
+                  </div>
+                  <div className="pl-3">
+                    <div className="text-sm font-semibold">{user.username}</div>
+                  </div>
+                </th>
+                <td className="px-4 py-3">
+                  <span className={`px-2 py-1 rounded-full text-xs font-semibold ${getUserTypeColor(user.userType)}`}>
+                    {user.userType?.charAt(0).toUpperCase() + user.userType?.slice(1) || 'N/A'}
+                  </span>
+                </td>
+                <td className="px-4 py-3">
+                  <span className={`px-2 py-1 rounded-full text-xs font-semibold ${getRoleColor(user.userRole)}`}>
+                    {user.userRole?.charAt(0).toUpperCase() + user.userRole?.slice(1) || 'N/A'}
+                  </span>
+                </td>
+                <td className="px-4 py-3">
+                  <span className="text-sm text-gray-600">
+                    {user.app?.title || 'N/A'}
+                  </span>
+                </td>
+                <td className="px-4 py-3">
+                  <div className={`flex items-center justify-center ${showViewButton ? 'space-x-1' : 'space-x-2'}`}>
+                    {/* View Button - Only show when showViewButton is true */}
+                    {showViewButton && (
+                      <button 
+                        className="p-1.5 text-gray-400 rounded-lg hover:bg-gray-100/50 hover:text-blue-500 transition-colors"
+                        title="View user details"
+                        onClick={() => handleViewUser(user)}
+                      >
+                        <FiEye className="w-4 h-4" />
+                      </button>
+                    )}
+                    <button 
+                      className="p-1.5 text-gray-400 rounded-lg hover:bg-gray-100/50 hover:text-green-500 transition-colors"
+                      title="Edit user"
+                      onClick={() => onEditUser && onEditUser(user)}
+                    >
+                      <FiEdit className="w-4 h-4" />
+                    </button>
+                    <button 
+                      onClick={() => handleDeleteUser(user)}
+                      className="p-1.5 text-gray-400 rounded-lg hover:bg-gray-100/50 hover:text-red-500 transition-colors"
+                      title="Delete user"
+                    >
+                      <FiTrash2 className="w-4 h-4" />
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+
+      {/* Mobile Card View - Visible on mobile only */}
+      <div className="lg:hidden space-y-3">
+        {filteredUsers.map((user) => (
+          <div key={user._id} className="bg-white border border-gray-200 rounded-lg p-4 shadow-sm hover:shadow-md transition-shadow">
+            {/* User Header */}
+            <div className="flex items-center justify-between mb-3">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-full bg-[#5041BC] flex items-center justify-center text-white font-semibold">
                   {user.username?.charAt(0)?.toUpperCase() || 'U'}
                 </div>
-                <div className="pl-3">
-                  <div className="text-sm font-semibold">{user.username}</div>
+                <div>
+                  <h3 className="font-semibold text-gray-900">{user.username}</h3>
+                  <p className="text-sm text-gray-500">{user.app?.title || 'No app'}</p>
                 </div>
-              </th>
-              <td className="px-4 py-3">
-                <span className={`px-2 py-1 rounded-full text-xs font-semibold ${getUserTypeColor(user.userType)}`}>
-                  {user.userType?.charAt(0).toUpperCase() + user.userType?.slice(1) || 'N/A'}
-                </span>
-              </td>
-              <td className="px-4 py-3">
-                <span className={`px-2 py-1 rounded-full text-xs font-semibold ${getRoleColor(user.userRole)}`}>
-                  {user.userRole?.charAt(0).toUpperCase() + user.userRole?.slice(1) || 'N/A'}
-                </span>
-              </td>
-              <td className="px-4 py-3">
-                <span className="text-sm text-gray-600">
-                  {user.app?.title || 'N/A'}
-                </span>
-              </td>
-              <td className="px-4 py-3">
-                <div className={`flex items-center justify-center ${showViewButton ? 'space-x-1' : 'space-x-2'}`}>
-                  {/* View Button - Only show when showViewButton is true */}
-                  {showViewButton && (
-                    <button 
-                      className="p-1.5 text-gray-400 rounded-lg hover:bg-gray-100/50 hover:text-blue-500 transition-colors"
-                      title="View user details"
-                      onClick={() => handleViewUser(user)}
-                    >
-                      <FiEye className="w-4 h-4" />
-                    </button>
-                  )}
+              </div>
+              
+              {/* Action Buttons */}
+              <div className="flex items-center gap-1">
+                {showViewButton && (
                   <button 
-                    className="p-1.5 text-gray-400 rounded-lg hover:bg-gray-100/50 hover:text-green-500 transition-colors"
-                    title="Edit user"
-                    onClick={() => onEditUser && onEditUser(user)}
+                    className="p-2 text-gray-400 hover:text-blue-500 hover:bg-blue-50 rounded-lg transition-colors"
+                    title="View user details"
+                    onClick={() => handleViewUser(user)}
                   >
-                    <FiEdit className="w-4 h-4" />
+                    <FiEye className="w-4 h-4" />
                   </button>
-                  <button 
-                    onClick={() => handleDeleteUser(user)}
-                    className="p-1.5 text-gray-400 rounded-lg hover:bg-gray-100/50 hover:text-red-500 transition-colors"
-                    title="Delete user"
-                  >
-                    <FiTrash2 className="w-4 h-4" />
-                  </button>
+                )}
+                <button 
+                  className="p-2 text-gray-400 hover:text-green-500 hover:bg-green-50 rounded-lg transition-colors"
+                  title="Edit user"
+                  onClick={() => onEditUser && onEditUser(user)}
+                >
+                  <FiEdit className="w-4 h-4" />
+                </button>
+                <button 
+                  onClick={() => handleDeleteUser(user)}
+                  className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
+                  title="Delete user"
+                >
+                  <FiTrash2 className="w-4 h-4" />
+                </button>
+              </div>
+            </div>
+
+            {/* User Details */}
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <span className="text-xs text-gray-500 font-medium">User Type</span>
+                <div className="mt-1">
+                  <span className={`inline-flex px-2 py-1 rounded-full text-xs font-semibold ${getUserTypeColor(user.userType)}`}>
+                    {user.userType?.charAt(0).toUpperCase() + user.userType?.slice(1) || 'N/A'}
+                  </span>
                 </div>
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
+              </div>
+              <div>
+                <span className="text-xs text-gray-500 font-medium">Role</span>
+                <div className="mt-1">
+                  <span className={`inline-flex px-2 py-1 rounded-full text-xs font-semibold ${getRoleColor(user.userRole)}`}>
+                    {user.userRole?.charAt(0).toUpperCase() + user.userRole?.slice(1) || 'N/A'}
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
     </div>
   );
 });

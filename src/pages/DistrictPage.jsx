@@ -4,7 +4,7 @@ import Sidebar from '../components/Sidebar';
 import PageBackground from '../components/PageBackground';
 import ProfileButton from '../components/ProfileButton';
 import DeleteConfirmModal from '../components/DeleteConfirmModal';
-import { useSidebar } from '../contexts/SidebarContext';
+
 import { FiPlus, FiTrash2, FiEdit, FiMap, FiLoader, FiAlertTriangle, FiX, FiSave } from 'react-icons/fi';
 
 const API_BASE_URL = 'http://localhost:3000/api';
@@ -22,7 +22,6 @@ api.interceptors.request.use((config) => {
 });
 
 export default function DistrictPage() {
-  const { isMinimized } = useSidebar();
   const [districts, setDistricts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -168,7 +167,7 @@ export default function DistrictPage() {
       <div className="fixed left-0 top-0 h-screen z-10">
         <Sidebar />
       </div>
-      <div className={`relative z-20 ${isMinimized ? 'ml-16' : 'ml-56'} flex flex-col min-h-screen transition-all duration-300 ease-in-out`}>
+      <div className="relative z-20 flex flex-col min-h-screen transition-all duration-300 ease-in-out" style={{ marginLeft: 'var(--sidebar-width, 224px)' }}>
         {/* Profile Button - Top Right */}
         <div className="absolute top-4 right-4 z-30">
           <ProfileButton />
@@ -248,7 +247,6 @@ export default function DistrictPage() {
                             </div>
                             <div className="pl-3">
                               <div className="text-sm font-semibold">{district.title}</div>
-                              <div className="font-normal text-gray-500 text-xs">District</div>
                             </div>
                           </th>
                           <td className="px-4 py-3">

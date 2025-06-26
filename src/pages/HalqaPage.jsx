@@ -4,7 +4,7 @@ import Sidebar from '../components/Sidebar';
 import PageBackground from '../components/PageBackground';
 import ProfileButton from '../components/ProfileButton';
 import { FiPlus, FiTrash2, FiEdit, FiHome, FiLoader, FiAlertTriangle, FiX, FiMap, FiMapPin, FiUsers } from 'react-icons/fi';
-import { useSidebar } from '../contexts/SidebarContext';
+
 
 const API_BASE_URL = 'http://localhost:3000/api';
 
@@ -21,7 +21,6 @@ api.interceptors.request.use((config) => {
 });
 
 export default function HalqaPage() {
-  const { isMinimized } = useSidebar();
   const [halqas, setHalqas] = useState([]);
   const [districts, setDistricts] = useState([]);
   const [areas, setAreas] = useState([]);
@@ -157,7 +156,7 @@ export default function HalqaPage() {
       <div className="fixed left-0 top-0 h-screen z-10">
         <Sidebar />
       </div>
-      <div className={`relative z-20 ${isMinimized ? 'ml-16' : 'ml-56'} flex flex-col min-h-screen transition-all duration-300 ease-in-out`}>
+      <div className="relative z-20 flex flex-col min-h-screen transition-all duration-300 ease-in-out" style={{ marginLeft: 'var(--sidebar-width, 224px)' }}>
         {/* Profile Button - Top Right */}
         <div className="absolute top-4 right-4 z-30">
           <ProfileButton />
@@ -222,7 +221,6 @@ export default function HalqaPage() {
                               </div>
                               <div>
                                 <div className="font-semibold text-gray-900 text-sm">{halqa.title}</div>
-                                <div className="text-xs text-gray-500">ID: {halqa._id?.slice(-6) || 'N/A'}</div>
                               </div>
                             </div>
                           </td>

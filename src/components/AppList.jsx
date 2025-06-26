@@ -126,7 +126,6 @@ export default function AppList({ refreshTrigger }) {
                       <h3 className="font-semibold text-sm text-gray-800 group-hover:text-[#5041BC] transition-colors truncate">
                         {app.title}
                       </h3>
-                      <p className="text-xs text-gray-500">Application</p>
                     </div>
                   </div>
                 </div>

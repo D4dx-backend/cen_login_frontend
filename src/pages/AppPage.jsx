@@ -4,13 +4,12 @@ import Sidebar from '../components/Sidebar';
 import PageBackground from '../components/PageBackground';
 import AppList from '../components/AppList';
 import ProfileButton from '../components/ProfileButton';
-import { useSidebar } from '../contexts/SidebarContext';
+
 import { FiPlus, FiSmartphone, FiX } from 'react-icons/fi';
 
 const API_BASE_URL = 'http://localhost:3000/api';
 
 export default function AppPage() {
-  const { isMinimized } = useSidebar();
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [newAppName, setNewAppName] = useState('');
   const [creating, setCreating] = useState(false);
@@ -55,7 +54,7 @@ export default function AppPage() {
       <div className="fixed left-0 top-0 h-screen z-10">
         <Sidebar />
       </div>
-      <div className={`relative z-20 ${isMinimized ? 'ml-16' : 'ml-56'} flex flex-col min-h-screen transition-all duration-300 ease-in-out`}>
+      <div className="relative z-20 flex flex-col min-h-screen transition-all duration-300 ease-in-out" style={{ marginLeft: 'var(--sidebar-width, 224px)' }}>
         <div className="absolute top-4 right-4 z-30">
           <ProfileButton />
         </div>

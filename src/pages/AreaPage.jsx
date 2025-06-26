@@ -4,7 +4,7 @@ import Sidebar from '../components/Sidebar';
 import PageBackground from '../components/PageBackground';
 import ProfileButton from '../components/ProfileButton';
 import DeleteConfirmModal from '../components/DeleteConfirmModal';
-import { useSidebar } from '../contexts/SidebarContext';
+
 import { FiPlus, FiTrash2, FiEdit, FiMapPin, FiLoader, FiAlertTriangle, FiX, FiMap } from 'react-icons/fi';
 
 const API_BASE_URL = 'http://localhost:3000/api';
@@ -22,7 +22,6 @@ api.interceptors.request.use((config) => {
 });
 
 export default function AreaPage() {
-  const { isMinimized } = useSidebar();
   const [areas, setAreas] = useState([]);
   const [districts, setDistricts] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -157,7 +156,7 @@ export default function AreaPage() {
       <div className="fixed left-0 top-0 h-screen z-10">
         <Sidebar />
       </div>
-      <div className={`relative z-20 ${isMinimized ? 'ml-16' : 'ml-56'} flex flex-col min-h-screen transition-all duration-300 ease-in-out`}>
+      <div className="relative z-20 flex flex-col min-h-screen transition-all duration-300 ease-in-out" style={{ marginLeft: 'var(--sidebar-width, 224px)' }}>
         {/* Profile Button - Top Right */}
         <div className="absolute top-4 right-4 z-30">
           <ProfileButton />
@@ -222,7 +221,6 @@ export default function AreaPage() {
                               </div>
                               <div>
                                 <div className="font-semibold text-gray-900 text-sm">{area.title}</div>
-                                <div className="text-xs text-gray-500">ID: {area._id?.slice(-6) || 'N/A'}</div>
                               </div>
                             </div>
                           </td>
