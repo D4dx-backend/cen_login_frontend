@@ -1,6 +1,34 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, createContext, useContext } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { FiUsers, FiBarChart2, FiSettings, FiBell, FiCreditCard, FiHelpCircle, FiHome, FiUser, FiSmartphone, FiMap, FiMapPin, FiUsers as FiUsersGroup, FiLogOut, FiChevronsLeft, FiChevronsRight, FiMenu, FiX } from 'react-icons/fi';
+
+// Create context within this file
+const SidebarContext = createContext();
+
+export const useSidebar = () => {
+  const context = useContext(SidebarContext);
+  if (!context) {
+    throw new Error('useSidebar must be used within a SidebarProvider');
+  }
+  return context;
+};
+
+// SidebarProvider component
+export const SidebarProvider = ({ children }) => {
+  const [isMinimized, setIsMinimized] = useState(true);
+  const [isHovered, setIsHovered] = useState(false);
+
+  return (
+    <SidebarContext.Provider value={{ 
+      isMinimized, 
+      setIsMinimized,
+      isHovered,
+      setIsHovered
+    }}>
+      {children}
+    </SidebarContext.Provider>
+  );
+};
 
 const navLinks = [
   { name: 'USER', icon: <FiUser />, path: '/user' },
@@ -68,14 +96,14 @@ export default function Sidebar() {
 
   const handleMouseEnter = () => {
     if (!isMobile) {
-      setIsHovered(true);
+    setIsHovered(true);
       setIsMinimized(false);
     }
   };
 
   const handleMouseLeave = () => {
     if (!isMobile) {
-      setIsHovered(false);
+    setIsHovered(false);
       setIsMinimized(true);
     }
   };
@@ -115,8 +143,8 @@ export default function Sidebar() {
       )}
 
       {/* Sidebar - Always visible, responsive width */}
-      <aside 
-        ref={sidebarRef}
+    <aside 
+      ref={sidebarRef}
         className={`
           ${isMobile 
             ? `fixed top-0 left-0 z-40 h-full transition-all duration-300 ease-in-out ${
@@ -131,12 +159,12 @@ export default function Sidebar() {
           } 
           ${!isMobile && !isExpanded ? 'rounded-tr-[30px] rounded-br-[30px]' : ''} 
           ${isMobile && !isMobileExpanded ? 'rounded-tr-[20px] rounded-br-[20px]' : ''}
-          border-r border-[#e3e6eb] shadow-2xl overflow-hidden
+          shadow-2xl overflow-hidden
         `}
-        onMouseEnter={handleMouseEnter}
-        onMouseLeave={handleMouseLeave}
-        tabIndex={0}
-      >
+      onMouseEnter={handleMouseEnter}
+      onMouseLeave={handleMouseLeave}
+      tabIndex={0}
+    >
         {/* Header with Logo/Menu Toggle */}
         <div className="flex items-center justify-center mb-4">
           {isMobile ? (
@@ -154,17 +182,17 @@ export default function Sidebar() {
           ) : (
             <div 
               className={`flex items-center group transition-all duration-300 ${isExpanded ? 'justify-start' : 'justify-center w-full'}`}
-            >
+        >
               <svg width="32" height="32" viewBox="0 0 120 120" fill="none" xmlns="http://www.w3.org/2000/svg" className="transition-transform duration-300 group-hover:rotate-180 flex-shrink-0">
-                <circle cx="60" cy="30" r="20" fill="#fff" />
-                <circle cx="30" cy="80" r="20" fill="#fff" />
-                <circle cx="90" cy="80" r="20" fill="#fff" />
-                <polygon points="60,50 40,80 80,80" fill="#A26AEA" />
-              </svg>
+            <circle cx="60" cy="30" r="20" fill="#fff" />
+            <circle cx="30" cy="80" r="20" fill="#fff" />
+            <circle cx="90" cy="80" r="20" fill="#fff" />
+            <polygon points="60,50 40,80 80,80" fill="#A26AEA" />
+          </svg>
               {isExpanded && (
                 <span className="ml-3 text-lg font-extrabold tracking-tight transition-all duration-300 whitespace-nowrap">
-                  Hira Admin
-                </span>
+                Hira Admin
+              </span>
               )}
             </div>
           )}
@@ -183,18 +211,18 @@ export default function Sidebar() {
               <span className="ml-3 text-lg font-extrabold tracking-tight whitespace-nowrap">
                 Hira Admin
               </span>
-            </div>
-          </div>
+        </div>
+      </div>
         )}
         
         <hr className="border-t border-[#A26AEA] mb-4 opacity-30" />
         
-        <nav className="flex-1">
+      <nav className="flex-1">
           <ul className={`${isMobile && !isMobileExpanded ? 'space-y-2' : 'space-y-1'}`}>
-            {navLinks.map((link, index) => (
-              <li key={link.name}>
-                <button
-                  ref={el => buttonRefs.current[index] = el}
+          {navLinks.map((link, index) => (
+            <li key={link.name}>
+              <button
+                ref={el => buttonRefs.current[index] = el}
                   onClick={() => handleNavigation(link.path)}
                   className={`w-full flex items-center ${
                     isExpanded 
@@ -203,34 +231,34 @@ export default function Sidebar() {
                         ? 'justify-center px-1 py-2' 
                         : 'justify-center px-2 py-2'
                   } text-left rounded-lg font-medium text-sm group transition-all duration-300 ease-in-out transform shadow-none border-2 border-transparent focus:outline-none focus:ring-2 focus:ring-[#A26AEA]/20 focus:border-[#A26AEA] ${
-                    activeIndex === index
+                  activeIndex === index
                       ? 'bg-[#A26AEA]/80 text-white border-2 border-[#5041BC] shadow-md scale-105 transition-all duration-300'
-                      : 'hover:bg-[#A26AEA]/20 hover:border-[#A26AEA] hover:scale-105 transition-all duration-200'
-                  }
-                  `}
-                  tabIndex={0}
+                    : 'hover:bg-[#A26AEA]/20 hover:border-[#A26AEA] hover:scale-105 transition-all duration-200'
+                }
+                `}
+                tabIndex={0}
                   title={!isExpanded ? link.name : ''}
-                >
+              >
                   <span className={`${isMobile && !isMobileExpanded ? 'text-sm' : 'text-base'} transition-transform duration-300 ease-in-out flex-shrink-0 ${
-                    activeIndex === index
-                      ? 'text-white scale-110'
-                      : 'text-white group-hover:scale-110'
-                  }`}>{link.icon}</span>
+                  activeIndex === index
+                    ? 'text-white scale-110'
+                    : 'text-white group-hover:scale-110'
+                }`}>{link.icon}</span>
                   {isExpanded && (
                     <span className="transition-all duration-300 ease-in-out text-xs font-semibold tracking-wide whitespace-nowrap overflow-hidden">
-                      {link.name}
-                    </span>
-                  )}
-                </button>
-              </li>
-            ))}
-          </ul>
-        </nav>
-        
-        {/* Logout Button */}
+                    {link.name}
+                  </span>
+                )}
+              </button>
+            </li>
+          ))}
+        </ul>
+      </nav>
+      
+      {/* Logout Button */}
         <div className="mt-4">
-          <button
-            onClick={handleLogout}
+        <button
+          onClick={handleLogout}
             className={`w-full flex items-center ${
               isExpanded 
                 ? 'justify-start gap-3 px-3 py-2' 
@@ -239,22 +267,22 @@ export default function Sidebar() {
                   : 'justify-center px-2 py-2'
             } text-left rounded-lg font-medium text-sm group transition-all duration-300 ease-in-out transform shadow-none border-2 border-transparent hover:bg-red-500/20 hover:border-red-500 focus:outline-none focus:ring-2 focus:ring-red-500/20`}
             title={!isExpanded ? 'LOGOUT' : ''}
-          >
+        >
             <span className={`${isMobile && !isMobileExpanded ? 'text-sm' : 'text-base'} transition-transform duration-300 ease-in-out text-white group-hover:scale-110 flex-shrink-0`}>
-              <FiLogOut />
-            </span>
+            <FiLogOut />
+          </span>
             {isExpanded && (
               <span className="transition-all duration-300 ease-in-out text-xs font-semibold tracking-wide text-white whitespace-nowrap">
-                LOGOUT
-              </span>
-            )}
-          </button>
-        </div>
-
+              LOGOUT
+            </span>
+          )}
+        </button>
+      </div>
+      
         {isExpanded && (
           <div className="mt-4 text-xs text-gray-200">© Hira Community</div>
-        )}
-      </aside>
+      )}
+    </aside>
     </>
   );
 } 

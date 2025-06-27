@@ -2,9 +2,11 @@ import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
 import Sidebar from '../components/Sidebar';
 import PageBackground from '../components/PageBackground';
-import UserListTable from '../components/UserListTable';
+import DataTable from '../components/DataTable';
 import ProfileButton from '../components/ProfileButton';
 import DeleteConfirmModal from '../components/DeleteConfirmModal';
+import CreateModal from '../components/CreateModal';
+
 
 import { FiPlus, FiFilter, FiSearch, FiX, FiUser, FiPhone, FiShield, FiSmartphone, FiEdit, FiAlertTriangle, FiTrash2, FiEye, FiCalendar, FiClock } from 'react-icons/fi';
 
@@ -25,6 +27,9 @@ api.interceptors.request.use((config) => {
 });
 
 export default function UserPage() {
+  const [users, setUsers] = useState([]);
+  const [usersLoading, setUsersLoading] = useState(true);
+  const [usersError, setUsersError] = useState('');
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [showEditForm, setShowEditForm] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
@@ -69,8 +74,28 @@ export default function UserPage() {
     { value: 'user', label: 'User' }
   ];
 
+  // Fetch users data
+  const fetchUsers = async () => {
+    try {
+      setUsersLoading(true);
+      setUsersError('');
+      const response = await api.get('/admin/users');
+      if (response.data.success) {
+        setUsers(response.data.data);
+      } else {
+        setUsersError('Failed to load users');
+      }
+    } catch (error) {
+      console.error('Error fetching users:', error);
+      setUsersError('Failed to load users. Please try again.');
+    } finally {
+      setUsersLoading(false);
+    }
+  };
+
   useEffect(() => {
     fetchApps();
+    fetchUsers();
   }, []);
 
   const createDefaultApp = async () => {
@@ -173,7 +198,7 @@ export default function UserPage() {
           app: ''
         });
         setShowCreateForm(false);
-        userTableRef.current?.refreshUsers();
+        fetchUsers();
       }
     } catch (error) {
       setMessage(error.response?.data?.message || 'Failed to create user');
@@ -219,7 +244,7 @@ export default function UserPage() {
         });
         setShowEditForm(false);
         setEditingUser(null);
-        userTableRef.current?.refreshUsers();
+        fetchUsers();
       }
     } catch (error) {
       setMessage(error.response?.data?.message || 'Failed to update user');
@@ -240,7 +265,7 @@ export default function UserPage() {
         await api.delete(`/admin/users/${userToDelete._id}`);
         setShowDeleteConfirm(false);
         setUserToDelete(null);
-        userTableRef.current?.refreshUsers();
+        fetchUsers();
         setMessage('User deleted successfully!');
       } catch (error) {
         setMessage('Failed to delete user');
@@ -253,8 +278,8 @@ export default function UserPage() {
 
   const cancelDelete = () => {
     if (!deleting) {
-      setShowDeleteConfirm(false);
-      setUserToDelete(null);
+    setShowDeleteConfirm(false);
+    setUserToDelete(null);
     }
   };
 
@@ -277,22 +302,44 @@ export default function UserPage() {
   };
 
   const getUserTypeColor = (userType) => {
-    switch (userType) {
+    switch (userType?.toLowerCase()) {
       case 'state': return 'bg-blue-100 text-blue-700 border-blue-200';
       case 'district': return 'bg-green-100 text-green-700 border-green-200';
       case 'area': return 'bg-yellow-100 text-yellow-700 border-yellow-200';
       case 'halqa': return 'bg-orange-100 text-orange-700 border-orange-200';
       case 'member': return 'bg-pink-100 text-pink-700 border-pink-200';
-      case 'membersGroup': return 'bg-indigo-100 text-indigo-700 border-indigo-200';
+      case 'membersgroup': return 'bg-indigo-100 text-indigo-700 border-indigo-200';
       default: return 'bg-gray-100 text-gray-700 border-gray-200';
     }
   };
 
   const getRoleColor = (role) => {
-    switch (role) {
+    switch (role?.toLowerCase()) {
       case 'admin': return 'bg-purple-100 text-purple-700 border-purple-200';
-      case 'user': return 'bg-gray-100 text-gray-700 border-gray-200';
+      case 'user': return 'bg-teal-100 text-teal-700 border-teal-200';
       default: return 'bg-gray-100 text-gray-700 border-gray-200';
+    }
+  };
+
+  const formatUserType = (type) => {
+    if (!type) return 'N/A';
+    switch (type.toLowerCase()) {
+      case 'state': return 'State';
+      case 'district': return 'District';
+      case 'area': return 'Area';
+      case 'halqa': return 'Halqa';
+      case 'member': return 'Member';
+      case 'membersgroup': return 'Members Group';
+      default: return type;
+    }
+  };
+
+  const formatUserRole = (role) => {
+    if (!role) return 'N/A';
+    switch (role.toLowerCase()) {
+      case 'admin': return 'Admin';
+      case 'user': return 'User';
+      default: return role;
     }
   };
 
@@ -304,7 +351,7 @@ export default function UserPage() {
         <Sidebar />
       </div>
       {/* Main content positioned to the right of sidebar */}
-      <div className="relative z-20 flex flex-col min-h-screen transition-all duration-300 ease-in-out" style={{ marginLeft: 'var(--sidebar-width, 224px)' }}>
+      <div className="relative z-20 flex flex-col min-h-screen transition-all duration-300 ease-in-out" style={{ marginLeft: 'var(--sidebar-width, 64px)' }}>
         {/* Profile Button - Top Right */}
         <div className="absolute top-4 right-4 z-30">
           <ProfileButton />
@@ -313,10 +360,10 @@ export default function UserPage() {
         <div className="flex-1 flex flex-col p-4 pt-16">
           <main className="flex-1 min-w-0 mt-4">
             {/* Heading */}
-            <h2 className="text-2xl font-extrabold bg-gradient-to-r from-[#5041BC] via-[#6C63FF] to-[#8B7EFF] bg-clip-text text-transparent mb-4">User Management</h2>
+            <h2 className="text-2xl font-extrabold text-[#5041BC] mb-4">User Management</h2>
             {/* Toolbar */}
-            <div className="flex flex-col gap-3 mb-4 sm:flex-row sm:items-center sm:justify-between sm:gap-2">
-              <div className="flex items-center w-full gap-2 sm:w-auto">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-4">
+              <div className="flex items-center w-full sm:w-auto gap-2">
                 <div className="relative w-full sm:w-64">
                   <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
                     <FiSearch className="w-4 h-4" />
@@ -330,13 +377,13 @@ export default function UserPage() {
                   />
                 </div>
               </div>
-              <div className="flex items-center gap-2 w-full sm:w-auto sm:gap-3">
+              <div className="flex items-center gap-2 sm:gap-3">
                 <button 
                   onClick={() => setShowFilterModal(true)}
-                  className="flex items-center justify-center space-x-2 text-sm font-medium text-gray-600 bg-gray-100/60 hover:bg-gray-100 rounded-lg px-3 py-2 transition-colors flex-1 sm:flex-none"
+                  className="flex items-center space-x-2 text-sm font-medium text-gray-600 bg-gray-100/60 hover:bg-gray-100 rounded-lg px-3 py-2 transition-colors"
                 >
                   <FiFilter className="w-4 h-4" />
-                  <span className="hidden sm:inline">Filter</span>
+                  <span>Filter</span>
                   {(filters.userType || filters.userRole || filters.app) && (
                     <span className="bg-[#5041BC] text-white text-xs rounded-full px-1.5 py-0.5 ml-1">
                       {[filters.userType, filters.userRole, filters.app].filter(Boolean).length}
@@ -345,25 +392,128 @@ export default function UserPage() {
                 </button>
                 <button 
                   onClick={() => setShowCreateForm(true)}
-                  className="flex items-center justify-center space-x-2 text-sm font-medium text-white bg-gradient-to-r from-[#5041BC] to-[#6C63FF] hover:from-[#6C63FF] hover:to-[#5041BC] rounded-lg px-3 py-2 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105 flex-1 sm:flex-none"
+                  className="flex items-center space-x-2 text-sm font-medium text-white bg-gradient-to-r from-[#5041BC] to-[#6C63FF] hover:from-[#6C63FF] hover:to-[#5041BC] rounded-lg px-3 py-2 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105"
                 >
                   <FiPlus className="w-4 h-4" />
-                  <span className="hidden sm:inline">Create User</span>
-                  <span className="sm:hidden">Create</span>
+                  <span>Create User</span>
                 </button>
               </div>
             </div>
 
             {/* User Table */}
             <div className="bg-white rounded-xl shadow-lg p-4">
-              <UserListTable 
-                onEditUser={handleEditUser} 
-                onDeleteUser={handleDeleteUser} 
-                onViewUser={handleViewUser} 
-                showViewButton={false}
+              <DataTable
+                ref={userTableRef} 
+                data={[...users].sort((a, b) => a.username.localeCompare(b.username))}
+                loading={usersLoading}
+                error={usersError}
+                onRetry={fetchUsers}
+                onRefresh={fetchUsers}
                 searchTerm={searchTerm}
                 filters={filters}
-                ref={userTableRef} 
+                emptyState={{
+                  icon: <FiUser />,
+                  title: "No users found",
+                  description: "Users will appear here once they are created"
+                }}
+                columns={[
+                  {
+                    key: 'username',
+                    label: 'User',
+                    type: 'avatar',
+                    fallback: 'U',
+                    searchable: true
+                  },
+                  {
+                    key: 'userType',
+                    label: 'User Type',
+                    type: 'badge',
+                    getBadgeClass: (userType) => getUserTypeColor(userType),
+                    formatValue: (userType) => formatUserType(userType)
+                  },
+                  {
+                    key: 'userRole',
+                    label: 'Role',
+                    type: 'badge',
+                    getBadgeClass: (userRole) => getRoleColor(userRole),
+                    formatValue: (userRole) => formatUserRole(userRole)
+                  },
+                  {
+                    key: 'app.title',
+                    label: 'App',
+                    type: 'badge',
+                    getBadgeClass: (appTitle) => {
+                      if (!appTitle) return 'bg-slate-50 text-slate-700 border border-slate-200';
+                      
+                      // Generate consistent colors based on app name
+                      const appColors = {
+                        'app 1': 'bg-cyan-50 text-cyan-800 border border-cyan-200',
+                        'test app': 'bg-purple-50 text-purple-800 border border-purple-200',
+                        'demo': 'bg-teal-50 text-teal-800 border border-teal-200',
+                        'app 2': 'bg-sky-50 text-sky-800 border border-sky-200',
+                        'production': 'bg-emerald-50 text-emerald-800 border border-emerald-200',
+                        'staging': 'bg-yellow-50 text-yellow-800 border border-yellow-200',
+                        'development': 'bg-orange-50 text-orange-800 border border-orange-200',
+                        'beta': 'bg-pink-50 text-pink-800 border border-pink-200',
+                        'admin panel': 'bg-indigo-50 text-indigo-800 border border-indigo-200',
+                        'mobile app': 'bg-violet-50 text-violet-800 border border-violet-200'
+                      };
+                      
+                      const normalizedTitle = appTitle.toLowerCase().trim();
+                      
+                      // Return specific color if found, otherwise generate based on hash
+                      if (appColors[normalizedTitle]) {
+                        return appColors[normalizedTitle];
+                      }
+                      
+                      // Generate color based on string hash for consistent colors
+                      const colors = [
+                        'bg-rose-50 text-rose-800 border border-rose-200',
+                        'bg-amber-50 text-amber-800 border border-amber-200',
+                        'bg-lime-50 text-lime-800 border border-lime-200',
+                        'bg-emerald-50 text-emerald-800 border border-emerald-200',
+                        'bg-teal-50 text-teal-800 border border-teal-200',
+                        'bg-cyan-50 text-cyan-800 border border-cyan-200',
+                        'bg-sky-50 text-sky-800 border border-sky-200',
+                        'bg-blue-50 text-blue-800 border border-blue-200',
+                        'bg-indigo-50 text-indigo-800 border border-indigo-200',
+                        'bg-violet-50 text-violet-800 border border-violet-200',
+                        'bg-purple-50 text-purple-800 border border-purple-200',
+                        'bg-fuchsia-50 text-fuchsia-800 border border-fuchsia-200'
+                      ];
+                      
+                      let hash = 0;
+                      for (let i = 0; i < normalizedTitle.length; i++) {
+                        hash = ((hash << 5) - hash + normalizedTitle.charCodeAt(i)) & 0xffffffff;
+                      }
+                      
+                      return colors[Math.abs(hash) % colors.length];
+                    }
+                  }
+                ]}
+                actions={[
+                  {
+                    icon: FiEye,
+                    title: "View user details",
+                    onClick: handleViewUser,
+                    className: "hover:text-blue-500 hover:bg-blue-50",
+                    mobileClassName: "hover:bg-blue-50 hover:text-blue-500"
+                  },
+                  {
+                    icon: FiEdit,
+                    title: "Edit user",
+                    onClick: handleEditUser,
+                    className: "hover:text-green-500 hover:bg-green-50",
+                    mobileClassName: "hover:bg-green-50 hover:text-green-500"
+                  },
+                  {
+                    icon: FiTrash2,
+                    title: "Delete user",
+                    onClick: handleDeleteUser,
+                    className: "hover:text-red-500 hover:bg-red-50",
+                    mobileClassName: "hover:bg-red-50 hover:text-red-500"
+                  }
+                ]}
               />
             </div>
           </main>
@@ -409,7 +559,7 @@ export default function UserPage() {
                       </option>
                     ))}
                   </select>
-                </div>
+                    </div>
 
                 {/* User Role Filter */}
                 <div>
@@ -427,7 +577,7 @@ export default function UserPage() {
                       </option>
                     ))}
                   </select>
-                </div>
+                      </div>
 
                 {/* App Filter */}
                 <div>
@@ -445,7 +595,7 @@ export default function UserPage() {
                       </option>
                     ))}
                   </select>
-                </div>
+                      </div>
 
                 <div className="flex gap-2 pt-2">
                   <button
@@ -454,12 +604,12 @@ export default function UserPage() {
                   >
                     Clear All
                   </button>
-                  <button
+                    <button
                     onClick={() => setShowFilterModal(false)}
                     className="flex-1 px-3 py-2 bg-[#5041BC] text-white rounded-md hover:bg-[#6C63FF]"
                   >
                     Apply
-                  </button>
+                    </button>
                 </div>
               </div>
             </div>
@@ -467,7 +617,7 @@ export default function UserPage() {
         </div>
       )}
 
-      {/* View User Modal - Minimized */}
+      {/* View User Modal - Simplified */}
       {showViewModal && (
         <div className="fixed inset-0 z-50 overflow-y-auto">
           <div 
@@ -476,88 +626,90 @@ export default function UserPage() {
           ></div>
           
           <div className="flex min-h-full items-center justify-center p-4">
-            <div className="relative bg-white rounded-lg shadow-lg w-full max-w-sm">
-              <div className="bg-gradient-to-r from-blue-500 to-blue-600 px-4 py-3 rounded-t-lg">
+            <div className="relative bg-white rounded-xl shadow-xl w-full max-w-lg">
+              <div className="bg-gradient-to-r from-blue-500 to-blue-600 p-4 rounded-t-xl">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
-                    <FiEye className="w-4 h-4 text-white" />
-                    <h3 className="text-sm font-semibold text-white">User Details</h3>
+                    <FiEye className="w-5 h-5 text-white" />
+                    <h3 className="text-lg font-bold text-white">User Details</h3>
                   </div>
                   <button
                     onClick={closeViewModal}
                     className="text-white/80 hover:text-white p-1"
                   >
-                    <FiX className="w-4 h-4" />
+                    <FiX className="w-5 h-5" />
                   </button>
                 </div>
               </div>
 
               <div className="p-4">
                 {viewLoading ? (
-                  <div className="flex items-center justify-center py-4">
-                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-500 mr-2"></div>
-                    <span className="text-gray-600 text-sm">Loading...</span>
+                  <div className="flex items-center justify-center py-6">
+                    <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-500 mr-2"></div>
+                    <span className="text-gray-600">Loading...</span>
                   </div>
                 ) : viewUserDetails ? (
-                  <div className="space-y-3">
+                  <div className="space-y-4">
                     {/* User Profile */}
-                    <div className="flex items-center gap-3 p-2 bg-gray-50 rounded">
-                      <div className="w-8 h-8 rounded-full bg-blue-500 flex items-center justify-center text-white font-semibold text-sm">
+                    <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
+                      <div className="w-12 h-12 rounded-full bg-blue-500 flex items-center justify-center text-white font-bold">
                         {viewUserDetails.username?.charAt(0)?.toUpperCase() || 'U'}
-                      </div>
+                  </div>
                       <div>
-                        <h4 className="font-semibold text-gray-900 text-sm">{viewUserDetails.username}</h4>
-                        <p className="text-gray-600 text-xs">{viewUserDetails.mobile}</p>
-                      </div>
-                    </div>
+                        <h4 className="font-semibold text-gray-900">{viewUserDetails.username}</h4>
+                        <p className="text-gray-600 text-sm">{viewUserDetails.mobile}</p>
+                  </div>
+                  </div>
 
                     {/* Details */}
-                    <div className="space-y-2 text-xs">
-                      <div className="flex justify-between">
-                        <span className="text-gray-500">Type:</span>
-                        <span className={`px-2 py-0.5 rounded text-xs font-medium ${getUserTypeColor(viewUserDetails.userType)}`}>
-                          {viewUserDetails.userType?.charAt(0).toUpperCase() + viewUserDetails.userType?.slice(1) || 'N/A'}
-                        </span>
+                    <div className="grid grid-cols-2 gap-3 text-sm">
+                      <div>
+                        <label className="text-gray-500 text-xs">Type</label>
+                        <div className={`mt-1 px-2 py-1 rounded text-xs font-medium ${getUserTypeColor(viewUserDetails.userType)}`}>
+                          {formatUserType(viewUserDetails.userType)}
+                        </div>
                       </div>
-                      <div className="flex justify-between">
-                        <span className="text-gray-500">Role:</span>
-                        <span className={`px-2 py-0.5 rounded text-xs font-medium ${getRoleColor(viewUserDetails.userRole)}`}>
-                          {viewUserDetails.userRole?.charAt(0).toUpperCase() + viewUserDetails.userRole?.slice(1) || 'N/A'}
-                        </span>
+                      <div>
+                        <label className="text-gray-500 text-xs">Role</label>
+                        <div className={`mt-1 px-2 py-1 rounded text-xs font-medium ${getRoleColor(viewUserDetails.userRole)}`}>
+                          {formatUserRole(viewUserDetails.userRole)}
+                        </div>
                       </div>
-                      <div className="flex justify-between">
-                        <span className="text-gray-500">App:</span>
-                        <span className="text-gray-900 font-medium">{viewUserDetails.app?.title || 'No app'}</span>
+                      <div className="col-span-2">
+                        <label className="text-gray-500 text-xs">App</label>
+                        <div className="mt-1 text-gray-900">{viewUserDetails.app?.title || 'No app assigned'}</div>
                       </div>
-                      <div className="flex justify-between">
-                        <span className="text-gray-500">Created:</span>
-                        <span className="text-gray-900">{new Date(viewUserDetails.createdAt).toLocaleDateString()}</span>
-                      </div>
+                      <div className="col-span-2">
+                        <label className="text-gray-500 text-xs">Created</label>
+                        <div className="mt-1 text-gray-900">
+                          {new Date(viewUserDetails.createdAt).toLocaleDateString()}
+                  </div>
+                </div>
                     </div>
                   </div>
                 ) : (
-                  <div className="text-center py-4">
-                    <p className="text-gray-500 text-sm">Failed to load user details</p>
+                  <div className="text-center py-6">
+                    <p className="text-gray-500">Failed to load user details</p>
                   </div>
                 )}
 
-                <div className="flex gap-2 pt-3 justify-end border-t border-gray-200 mt-3">
+                <div className="flex gap-2 pt-4 justify-end border-t border-gray-200">
                   <button
                     onClick={closeViewModal}
-                    className="px-3 py-1.5 text-xs border border-gray-300 rounded text-gray-700 hover:bg-gray-50"
+                    className="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50"
                   >
                     Close
                   </button>
                   {viewingUser && (
-                    <button
+                  <button
                       onClick={() => {
                         closeViewModal();
                         handleEditUser(viewingUser);
                       }}
-                      className="px-3 py-1.5 text-xs bg-blue-600 text-white rounded hover:bg-blue-700"
+                      className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
                     >
                       Edit
-                    </button>
+                  </button>
                   )}
                 </div>
               </div>
@@ -566,192 +718,68 @@ export default function UserPage() {
         </div>
       )}
 
-      {/* Create User Modal - Compact */}
-      {showCreateForm && (
-        <div className="fixed inset-0 z-50 overflow-y-auto">
-          <div 
-            className="fixed inset-0 bg-black/50"
-            onClick={() => {
-              setShowCreateForm(false);
-              resetForm();
-            }}
-          ></div>
-          
-          <div className="flex min-h-full items-center justify-center p-4">
-            <div className="relative bg-white rounded-lg shadow-lg w-full max-w-lg mx-4">
-              <div className="bg-gradient-to-r from-[#5041BC] to-[#6C63FF] px-4 py-3 rounded-t-lg">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <FiUser className="w-4 h-4 text-white" />
-                    <h3 className="text-lg font-semibold text-white">Create User</h3>
-                  </div>
-                  <button
-                    onClick={() => {
-                      setShowCreateForm(false);
-                      resetForm();
-                    }}
-                    className="text-white/80 hover:text-white p-1"
-                  >
-                    <FiX className="w-5 h-5" />
-                  </button>
-                </div>
-              </div>
-
-              <form onSubmit={handleSubmit} className="p-4">
-                {message && (
-                  <div className={`p-2 rounded text-xs mb-3 ${
-                    message.includes('successfully') 
-                      ? 'bg-green-50 text-green-700 border-l-2 border-green-400' 
-                      : 'bg-red-50 text-red-700 border-l-2 border-red-400'
-                  }`}>
-                    {message}
-                  </div>
-                )}
-
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  <div>
-                    <label className="block text-xs font-medium text-gray-700 mb-1">Username *</label>
-                    <input
-                      type="text"
-                      name="username"
-                      required
-                      value={formData.username}
-                      onChange={handleInputChange}
-                      className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-[#5041BC]"
-                      placeholder="Enter username"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-xs font-medium text-gray-700 mb-1">Mobile *</label>
-                    <input
-                      type="tel"
-                      name="mobile"
-                      required
-                      value={formData.mobile}
-                      onChange={handleInputChange}
-                      className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-[#5041BC]"
-                      placeholder="Mobile number"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-xs font-medium text-gray-700 mb-1">Type *</label>
-                    <select
-                      name="userType"
-                      required
-                      value={formData.userType}
-                      onChange={handleInputChange}
-                      className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-[#5041BC] bg-white"
-                    >
-                      <option value="">Select type</option>
-                      {userTypes.map(type => (
-                        <option key={type.value} value={type.value}>
-                          {type.label}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-
-                  <div>
-                    <label className="block text-xs font-medium text-gray-700 mb-1">Role *</label>
-                    <select
-                      name="userRole"
-                      required
-                      value={formData.userRole}
-                      onChange={handleInputChange}
-                      className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-[#5041BC] bg-white"
-                    >
-                      <option value="">Select role</option>
-                      {userRoles.map(role => (
-                        <option key={role.value} value={role.value}>
-                          {role.label}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-
-                  <div className="sm:col-span-2">
-                    <div className="flex items-center justify-between mb-1">
-                      <label className="block text-xs font-medium text-gray-700">App *</label>
-                      {!appsLoading && (
-                        <button
-                          type="button"
-                          onClick={fetchApps}
-                          className="text-xs text-[#5041BC] hover:text-[#6C63FF]"
-                        >
-                          Refresh
-                        </button>
-                      )}
-                    </div>
-                    {appsLoading ? (
-                      <div className="px-2 py-1.5 w-full border border-gray-300 rounded bg-gray-50 flex items-center">
-                        <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-[#5041BC] mr-2"></div>
-                        <span className="text-gray-500 text-xs">Loading...</span>
-                      </div>
-                    ) : apps.length === 0 ? (
-                      <div className="space-y-2">
-                        <div className="px-2 py-1.5 w-full border border-gray-300 rounded bg-gray-50 text-gray-500 text-xs">
-                          No apps available
-                        </div>
-                        <button
-                          type="button"
-                          onClick={createDefaultApp}
-                          className="w-full py-1.5 px-2 bg-[#5041BC] text-white rounded hover:bg-[#6C63FF] text-xs"
-                        >
-                          Create Default App
-                        </button>
-                      </div>
-                    ) : (
-                      <select
-                        name="app"
-                        required
-                        value={formData.app}
-                        onChange={handleInputChange}
-                        className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-[#5041BC] bg-white"
-                      >
-                        <option value="">Select app</option>
-                        {apps.map(app => (
-                          <option key={app._id} value={app._id}>
-                            {app.title}
-                          </option>
-                        ))}
-                      </select>
-                    )}
-                  </div>
-                </div>
-
-                <div className="flex flex-col sm:flex-row gap-2 pt-3 justify-end border-t border-gray-200 mt-3">
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setShowCreateForm(false);
-                      resetForm();
-                    }}
-                    className="px-3 py-1.5 text-xs border border-gray-300 rounded text-gray-700 hover:bg-gray-50 order-2 sm:order-1"
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    type="submit"
-                    disabled={loading}
-                    className="px-3 py-1.5 text-xs bg-[#5041BC] text-white rounded hover:bg-[#6C63FF] disabled:opacity-50 order-1 sm:order-2"
-                  >
-                    {loading ? (
-                      <div className="flex items-center gap-1 justify-center">
-                        <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-white"></div>
-                        Creating...
-                      </div>
-                    ) : (
-                      'Create'
-                    )}
-                  </button>
-                </div>
-              </form>
-            </div>
-          </div>
-        </div>
-      )}
+      {/* Create User Modal */}
+      <CreateModal
+        key={showCreateForm ? 'open' : 'closed'}
+        isOpen={showCreateForm}
+        onClose={() => setShowCreateForm(false)}
+        title="Create User"
+        icon={FiUser}
+        apiEndpoint="/admin/users"
+        fields={[
+          {
+            name: 'username',
+            label: 'Username',
+            type: 'text',
+            required: true,
+            placeholder: 'Enter username'
+          },
+          {
+            name: 'mobile',
+            label: 'Mobile',
+            type: 'tel',
+            required: true,
+            placeholder: 'Mobile number'
+          },
+          {
+            name: 'userType',
+            label: 'Type',
+            type: 'select',
+            required: true,
+            options: userTypes,
+            valueKey: 'value',
+            labelKey: 'label'
+          },
+          {
+            name: 'userRole',
+            label: 'Role',
+            type: 'select',
+            required: true,
+            options: userRoles,
+            valueKey: 'value',
+            labelKey: 'label'
+          },
+          {
+            name: 'app',
+            label: 'App',
+            type: 'select',
+            required: true,
+            dependsOn: 'apps',
+            fullWidth: true
+          }
+        ]}
+        dependencies={{
+          apps: '/apps'
+        }}
+        validationRules={{
+          mobile: (value) => ({
+            isValid: /^\d{10,15}$/.test(value),
+            message: 'Mobile number must be 10-15 digits'
+          })
+        }}
+        onSuccess={fetchUsers}
+        successMessage="User created successfully!"
+      />
 
       {/* Edit User Modal - Compact */}
       {showEditForm && (
@@ -767,7 +795,7 @@ export default function UserPage() {
           
           {/* Modal container */}
           <div className="flex min-h-full items-center justify-center p-4">
-            <div className="relative bg-white rounded-lg shadow-md w-full max-w-lg mx-4">
+            <div className="relative bg-white rounded-lg shadow-md w-full max-w-lg">
               {/* Modal Header - Gradient */}
               <div className="bg-gradient-to-r from-violet-500 to-violet-600 px-4 py-3 rounded-t-lg">
                 <div className="flex items-center justify-between">
@@ -804,7 +832,7 @@ export default function UserPage() {
                   </div>
                 )}
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div className="grid grid-cols-2 gap-3">
                   {/* Username */}
                   <div className="space-y-1">
                     <label htmlFor="edit-username" className="block text-xs font-medium text-gray-700">
@@ -884,7 +912,7 @@ export default function UserPage() {
                   </div>
 
                   {/* App */}
-                  <div className="space-y-1 sm:col-span-2">
+                  <div className="space-y-1 col-span-2">
                     <div className="flex items-center justify-between">
                       <label htmlFor="edit-app" className="block text-xs font-medium text-gray-700">
                         App *
@@ -938,24 +966,24 @@ export default function UserPage() {
                 </div>
 
                 {/* Form Actions */}
-                <div className="flex flex-col sm:flex-row gap-2 pt-3 justify-end border-t border-gray-200 mt-3">
+                <div className="flex gap-2 pt-3 justify-end border-t border-gray-200 mt-3">
                   <button
                     type="button"
                     onClick={() => {
                       setShowEditForm(false);
                       resetForm();
                     }}
-                    className="px-3 py-1.5 text-xs border border-gray-300 rounded text-gray-700 hover:bg-gray-50 font-medium order-2 sm:order-1"
+                    className="px-3 py-1.5 text-xs border border-gray-300 rounded text-gray-700 hover:bg-gray-50 font-medium"
                   >
                     Cancel
                   </button>
                   <button
                     type="submit"
                     disabled={loading}
-                    className="px-3 py-1.5 text-xs bg-violet-600 text-white rounded hover:bg-indigo-600 disabled:opacity-50 disabled:cursor-not-allowed font-medium order-1 sm:order-2"
+                    className="px-3 py-1.5 text-xs bg-violet-600 text-white rounded hover:bg-indigo-600 disabled:opacity-50 disabled:cursor-not-allowed font-medium"
                   >
                     {loading ? (
-                      <div className="flex items-center gap-1 justify-center">
+                      <div className="flex items-center gap-1">
                         <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-white"></div>
                         Updating...
                       </div>
@@ -975,8 +1003,9 @@ export default function UserPage() {
         isOpen={showDeleteConfirm}
         onClose={cancelDelete}
         onConfirm={confirmDelete}
+        title="Delete User"
         itemName={userToDelete?.username}
-        itemType="User"
+        itemType="user"
         loading={deleting}
       />
     </div>

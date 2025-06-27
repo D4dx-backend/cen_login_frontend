@@ -4,6 +4,7 @@ import Sidebar from '../components/Sidebar';
 import PageBackground from '../components/PageBackground';
 import AppList from '../components/AppList';
 import ProfileButton from '../components/ProfileButton';
+import CreateModal from '../components/CreateModal';
 
 import { FiPlus, FiSmartphone, FiX } from 'react-icons/fi';
 
@@ -80,82 +81,26 @@ export default function AppPage() {
         </div>
       </div>
 
-      {showCreateForm && (
-        <div className="fixed inset-0 z-50 overflow-y-auto">
-          <div 
-            className="fixed inset-0 bg-black/50"
-            onClick={() => {
-              setShowCreateForm(false);
-              resetForm();
-            }}
-          ></div>
-          
-          <div className="flex min-h-full items-center justify-center p-4">
-            <div className="relative bg-white rounded-lg shadow-lg w-full max-w-lg">
-              <div className="bg-gradient-to-r from-[#5041BC] to-[#6C63FF] px-4 py-3 rounded-t-lg">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <FiSmartphone className="w-4 h-4 text-white" />
-                    <h3 className="text-lg font-semibold text-white">Create Application</h3>
-                  </div>
-                  <button
-                    onClick={() => {
-                      setShowCreateForm(false);
-                      resetForm();
-                    }}
-                    className="text-white/80 hover:text-white p-1"
-                  >
-                    <FiX className="w-5 h-5" />
-                  </button>
-                </div>
-              </div>
-
-              <form onSubmit={handleCreateApp} className="p-4">
-                <div className="grid grid-cols-1 gap-3">
-                  <div>
-                    <label className="block text-xs font-medium text-gray-700 mb-1">Application Name *</label>
-                    <input
-                      type="text"
-                      value={newAppName}
-                      onChange={(e) => setNewAppName(e.target.value)}
-                      required
-                      className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-[#5041BC]"
-                      placeholder="Enter application name"
-                    />
-                  </div>
-                </div>
-
-                <div className="flex gap-2 pt-3 justify-end border-t border-gray-200 mt-3">
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setShowCreateForm(false);
-                      resetForm();
-                    }}
-                    className="px-3 py-1.5 text-xs border border-gray-300 rounded text-gray-700 hover:bg-gray-50"
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    type="submit"
-                    disabled={creating}
-                    className="px-3 py-1.5 text-xs bg-[#5041BC] text-white rounded hover:bg-[#6C63FF] disabled:opacity-50"
-                  >
-                    {creating ? (
-                      <div className="flex items-center gap-1">
-                        <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-white"></div>
-                        Creating...
-                      </div>
-                    ) : (
-                      'Create'
-                    )}
-                  </button>
-                </div>
-              </form>
-            </div>
-          </div>
-        </div>
-      )}
+      {/* Create App Modal */}
+      <CreateModal
+        isOpen={showCreateForm}
+        onClose={() => setShowCreateForm(false)}
+        title="Create Application"
+        icon={FiSmartphone}
+        apiEndpoint="/apps"
+        fields={[
+          {
+            name: 'title',
+            label: 'Application Name',
+            type: 'text',
+            required: true,
+            placeholder: 'Enter application name',
+            fullWidth: true
+          }
+        ]}
+        onSuccess={() => setRefreshTrigger(prev => prev + 1)}
+        successMessage="Application created successfully!"
+      />
     </div>
   );
 } 

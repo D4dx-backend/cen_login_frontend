@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { FiEye, FiSettings, FiTrash2, FiUsers, FiSmartphone, FiX, FiAlertTriangle } from 'react-icons/fi';
+import DeleteConfirmModal from './DeleteConfirmModal';
 
 const API_BASE_URL = 'http://localhost:3000/api';
 
@@ -11,6 +12,7 @@ export default function AppList({ refreshTrigger }) {
   const [error, setError] = useState('');
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [appToDelete, setAppToDelete] = useState(null);
+  const [deleting, setDeleting] = useState(false);
 
   useEffect(() => {
     fetchApps();
@@ -42,6 +44,7 @@ export default function AppList({ refreshTrigger }) {
     if (!appToDelete) return;
     
     try {
+      setDeleting(true);
       const token = localStorage.getItem('adminToken');
       await axios.delete(`${API_BASE_URL}/apps/${appToDelete._id}`, {
         headers: {
@@ -54,12 +57,16 @@ export default function AppList({ refreshTrigger }) {
     } catch (error) {
       console.error('Error deleting app:', error);
       alert('Failed to delete app');
+    } finally {
+      setDeleting(false);
     }
   };
 
   const cancelDelete = () => {
-    setShowDeleteConfirm(false);
-    setAppToDelete(null);
+    if (!deleting) {
+      setShowDeleteConfirm(false);
+      setAppToDelete(null);
+    }
   };
 
   const getStatusColor = (status) => {
@@ -85,12 +92,12 @@ export default function AppList({ refreshTrigger }) {
     return (
       <div className="text-center py-6">
         <p className="text-red-500 mb-3 text-sm">{error}</p>
-        <button 
-          onClick={fetchApps}
+          <button 
+            onClick={fetchApps}
           className="px-3 py-1.5 bg-[#5041BC] text-white rounded-lg hover:bg-[#6C63FF] transition-colors text-sm"
-        >
-          Retry
-        </button>
+          >
+            Retry
+          </button>
       </div>
     );
   }
@@ -195,59 +202,15 @@ export default function AppList({ refreshTrigger }) {
       </div>
 
       {/* Delete Confirmation Modal */}
-      {showDeleteConfirm && (
-        <div className="fixed inset-0 z-50 overflow-y-auto">
-          {/* Backdrop */}
-          <div 
-            className="fixed inset-0 bg-black/50 backdrop-blur-sm"
-            onClick={cancelDelete}
-          ></div>
-          
-          {/* Modal container */}
-          <div className="flex min-h-full items-center justify-center p-4">
-            <div className="relative bg-white rounded-lg shadow-xl w-full max-w-sm">
-              {/* Modal Header */}
-              <div className="flex items-center gap-2 p-3 border-b border-gray-200">
-                <div className="w-6 h-6 bg-red-500 rounded-lg flex items-center justify-center">
-                  <FiAlertTriangle className="w-3 h-3 text-white" />
-                </div>
-                <h3 className="text-base font-semibold text-gray-900">Confirm Delete</h3>
-              </div>
-
-              {/* Modal Body */}
-              <div className="p-3">
-                <div className="mb-3">
-                  <p className="text-gray-600 mb-3 text-sm">
-                    Are you sure you want to delete this application? This action cannot be undone.
-                  </p>
-                  {appToDelete && (
-                    <div className="bg-gray-50 rounded-lg p-3 border-l-4 border-red-400">
-                      <div className="font-semibold text-gray-900 text-sm">{appToDelete.title}</div>
-                      <div className="text-xs text-gray-500 mt-1">ID: {appToDelete._id.slice(-8)}</div>
-                    </div>
-                  )}
-                </div>
-
-                {/* Actions */}
-                <div className="flex gap-2 justify-end">
-                  <button
-                    onClick={cancelDelete}
-                    className="px-3 py-1.5 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-all duration-200 text-sm"
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    onClick={confirmDelete}
-                    className="px-3 py-1.5 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-all duration-200 text-sm shadow-md hover:shadow-lg"
-                  >
-                    Delete App
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
+      <DeleteConfirmModal
+        isOpen={showDeleteConfirm}
+        onClose={cancelDelete}
+        onConfirm={confirmDelete}
+        title="Delete Application"
+        itemName={appToDelete?.title}
+        itemType="application"
+        loading={deleting}
+      />
     </div>
   );
 } 

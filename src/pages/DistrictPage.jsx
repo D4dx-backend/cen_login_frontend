@@ -1,9 +1,11 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
 import Sidebar from '../components/Sidebar';
 import PageBackground from '../components/PageBackground';
 import ProfileButton from '../components/ProfileButton';
 import DeleteConfirmModal from '../components/DeleteConfirmModal';
+import DataTable from '../components/DataTable';
+import CreateModal from '../components/CreateModal';
 
 import { FiPlus, FiTrash2, FiEdit, FiMap, FiLoader, FiAlertTriangle, FiX, FiSave } from 'react-icons/fi';
 
@@ -33,6 +35,7 @@ export default function DistrictPage() {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [districtToDelete, setDistrictToDelete] = useState(null);
   const [deleting, setDeleting] = useState(false);
+  const tableRef = useRef();
   
   const [formData, setFormData] = useState({
     title: '',
@@ -143,8 +146,8 @@ export default function DistrictPage() {
 
   const cancelDelete = () => {
     if (!deleting) {
-      setShowDeleteConfirm(false);
-      setDistrictToDelete(null);
+    setShowDeleteConfirm(false);
+    setDistrictToDelete(null);
     }
   };
 
@@ -183,13 +186,13 @@ export default function DistrictPage() {
                 {/* Empty space for consistency with UserPage layout */}
               </div>
               <div className="flex items-center gap-2 sm:gap-3">
-                <button 
-                  onClick={() => setShowCreateForm(true)}
+              <button 
+                onClick={() => setShowCreateForm(true)}
                   className="flex items-center space-x-2 text-sm font-medium text-white bg-gradient-to-r from-[#5041BC] to-[#6C63FF] hover:from-[#6C63FF] hover:to-[#5041BC] rounded-lg px-3 py-2 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105"
-                >
-                  <FiPlus className="w-4 h-4" />
-                  <span>Create District</span>
-                </button>
+              >
+                <FiPlus className="w-4 h-4" />
+                <span>Create District</span>
+              </button>
               </div>
             </div>
             
@@ -198,180 +201,82 @@ export default function DistrictPage() {
                 {successMessage}
               </div>
             )}
-
+            
             {/* District Table */}
             <div className="bg-white rounded-xl shadow-lg p-4">
-              {loading ? (
-                <div className="text-center py-6">
-                  <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-[#5041BC] mx-auto"></div>
-                  <p className="mt-2 text-gray-600 text-sm">Loading districts...</p>
-                </div>
-              ) : error ? (
-                <div className="text-center py-6">
-                  <p className="text-red-500 mb-3 text-sm">{error}</p>
-                  <button onClick={fetchDistricts} className="px-3 py-1.5 bg-[#5041BC] text-white rounded-lg hover:bg-[#6C63FF] transition-colors text-sm">
-                    Retry
-                  </button>
-                </div>
-              ) : districts.length === 0 ? (
-                <div className="text-center py-8">
-                  <FiMap className="w-12 h-12 text-gray-300 mx-auto mb-3" />
-                  <h3 className="text-base font-medium text-gray-500 mb-1">No districts found</h3>
-                  <p className="text-xs text-gray-400">Create your first district to get started</p>
-                </div>
-              ) : (
-                <div>
-                  <table className="w-full text-sm text-left text-gray-500">
-                    <thead className="text-xs text-gray-700 uppercase bg-gray-50/50">
-                      <tr>
-                        <th scope="col" className="px-4 py-3 font-semibold">
-                          District
-                        </th>
-                        <th scope="col" className="px-4 py-3 font-semibold">
-                          Created
-                        </th>
-                        <th scope="col" className="px-4 py-3 font-semibold">
-                          Updated
-                        </th>
-                        <th scope="col" className="px-4 py-3 font-semibold text-center">
-                          Actions
-                        </th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-gray-100">
-                      {districts.map((district) => (
-                        <tr key={district._id} className="transform transition-transform duration-300 ease-in-out hover:scale-[1.01] hover:shadow-md hover:bg-white rounded-xl">
-                          <th scope="row" className="flex items-center px-4 py-3 text-gray-900 whitespace-nowrap">
-                            <div className="w-9 h-9 rounded-full bg-[#5041BC] flex items-center justify-center text-white font-semibold text-sm">
-                              {district.title?.charAt(0)?.toUpperCase() || 'D'}
-                            </div>
-                            <div className="pl-3">
-                              <div className="text-sm font-semibold">{district.title}</div>
-                            </div>
-                          </th>
-                          <td className="px-4 py-3">
-                            <span className="text-sm text-gray-600">
-                              {new Date(district.createdAt).toLocaleDateString('en-US', { 
-                                month: 'short', 
-                                day: 'numeric',
-                                year: 'numeric'
-                              })}
-                            </span>
-                          </td>
-                          <td className="px-4 py-3">
-                            <span className="text-sm text-gray-600">
-                              {new Date(district.updatedAt).toLocaleDateString('en-US', { 
-                                month: 'short', 
-                                day: 'numeric',
-                                year: 'numeric'
-                              })}
-                            </span>
-                          </td>
-                          <td className="px-4 py-3">
-                            <div className="flex items-center justify-center space-x-2">
-                              <button 
-                                className="p-1.5 text-gray-400 rounded-lg hover:bg-gray-100/50 hover:text-green-500 transition-colors"
-                                title="Edit district"
-                                onClick={() => startEdit(district)}
-                              >
-                                <FiEdit className="w-4 h-4" />
-                              </button>
-                              <button 
-                                onClick={() => handleDeleteDistrict(district)}
-                                className="p-1.5 text-gray-400 rounded-lg hover:bg-gray-100/50 hover:text-red-500 transition-colors"
-                                title="Delete district"
-                              >
-                                <FiTrash2 className="w-4 h-4" />
-                              </button>
-                            </div>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              )}
+              <DataTable
+                ref={tableRef}
+                data={districts}
+                loading={loading}
+                error={error}
+                onRetry={fetchDistricts}
+                onRefresh={fetchDistricts}
+                emptyState={{
+                  icon: <FiMap />,
+                  title: "No districts found",
+                  description: "Create your first district to get started"
+                }}
+                columns={[
+                  {
+                    key: 'title',
+                    label: 'District',
+                    type: 'avatar',
+                    fallback: 'D',
+                    searchable: true
+                  },
+                  {
+                    key: 'createdAt',
+                    label: 'Created',
+                    type: 'date'
+                  },
+                  {
+                    key: 'updatedAt',
+                    label: 'Updated', 
+                    type: 'date'
+                  }
+                ]}
+                actions={[
+                  {
+                    icon: FiEdit,
+                    title: "Edit district",
+                    onClick: startEdit,
+                    className: "hover:bg-gray-100/50 hover:text-green-500",
+                    mobileClassName: "hover:bg-green-50 hover:text-green-500"
+                  },
+                  {
+                    icon: FiTrash2,
+                    title: "Delete district",
+                    onClick: handleDeleteDistrict,
+                    className: "hover:bg-gray-100/50 hover:text-red-500",
+                    mobileClassName: "hover:bg-red-50 hover:text-red-500"
+                  }
+                ]}
+              />
             </div>
           </main>
         </div>
       </div>
 
-      {/* Create District Modal - Gradient Header */}
-      {showCreateForm && (
-        <div className="fixed inset-0 z-50 overflow-y-auto">
-          {/* Backdrop */}
-          <div 
-            className="fixed inset-0 bg-black/50"
-            onClick={() => {
-              setShowCreateForm(false);
-              resetForm();
-            }}
-          ></div>
-          
-          {/* Modal container */}
-          <div className="flex min-h-full items-center justify-center p-4">
-            <div className="relative bg-white rounded-lg shadow-lg w-full max-w-lg">
-              {/* Modal Header - Gradient */}
-              <div className="bg-gradient-to-r from-[#5041BC] to-[#6C63FF] px-4 py-3 rounded-t-lg">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <FiMap className="w-4 h-4 text-white" />
-                    <h3 className="text-lg font-semibold text-white">Create District</h3>
-                  </div>
-                  <button
-                    onClick={() => {
-                      setShowCreateForm(false);
-                      resetForm();
-                    }}
-                    className="text-white/80 hover:text-white p-1"
-                  >
-                    <FiX className="w-5 h-5" />
-                  </button>
-                </div>
-              </div>
-
-              {/* Modal Body */}
-              <form onSubmit={handleCreateDistrict} className="p-4">
-                <div className="grid grid-cols-1 gap-3">
-                  {/* District Name */}
-                  <div>
-                    <label className="block text-xs font-medium text-gray-700 mb-1">District Name *</label>
-                    <input
-                      type="text"
-                      name="title"
-                      required
-                      value={formData.title}
-                      onChange={handleInputChange}
-                      className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-[#5041BC]"
-                      placeholder="Enter district name"
-                    />
-                  </div>
-                </div>
-
-                {/* Form Actions */}
-                <div className="flex gap-2 pt-3 justify-end border-t border-gray-200 mt-3">
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setShowCreateForm(false);
-                      resetForm();
-                    }}
-                    className="px-3 py-1.5 text-xs border border-gray-300 rounded text-gray-700 hover:bg-gray-50"
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    type="submit"
-                    className="px-3 py-1.5 text-xs bg-[#5041BC] text-white rounded hover:bg-[#6C63FF]"
-                  >
-                    Create
-                  </button>
-                </div>
-              </form>
-            </div>
-          </div>
-        </div>
-      )}
+      {/* Create District Modal */}
+      <CreateModal
+        isOpen={showCreateForm}
+        onClose={() => setShowCreateForm(false)}
+        title="Create District"
+        icon={FiMap}
+        apiEndpoint="/districts"
+        fields={[
+          {
+            name: 'title',
+            label: 'District Name',
+            type: 'text',
+            required: true,
+            placeholder: 'Enter district name',
+            fullWidth: true
+          }
+        ]}
+        onSuccess={fetchDistricts}
+        successMessage="District created successfully!"
+      />
 
       {/* Edit District Modal - Gradient Header */}
       {showEditForm && (
@@ -392,8 +297,8 @@ export default function DistrictPage() {
               <div className="bg-gradient-to-r from-violet-500 to-violet-600 px-4 py-3 rounded-t-lg">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
-                    <FiEdit className="w-4 h-4 text-white" />
-                    <h3 className="text-lg font-semibold text-white">Edit District</h3>
+                      <FiEdit className="w-4 h-4 text-white" />
+                      <h3 className="text-lg font-semibold text-white">Edit District</h3>
                   </div>
                   <button
                     onClick={() => {
