@@ -8,7 +8,7 @@ import DeleteConfirmModal from '../components/DeleteConfirmModal';
 import CreateModal from '../components/CreateModal';
 
 
-import { FiPlus, FiFilter, FiSearch, FiX, FiUser, FiPhone, FiShield, FiSmartphone, FiEdit, FiAlertTriangle, FiTrash2, FiEye, FiCalendar, FiClock } from 'react-icons/fi';
+import { FiPlus, FiFilter, FiSearch, FiX, FiUser, FiPhone, FiShield, FiSmartphone, FiEdit, FiAlertTriangle, FiTrash2, FiEye, FiCalendar, FiClock, FiChevronDown } from 'react-icons/fi';
 
 const API_BASE_URL = 'http://localhost:3000/api';
 
@@ -34,7 +34,7 @@ export default function UserPage() {
   const [showEditForm, setShowEditForm] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [showViewModal, setShowViewModal] = useState(false);
-  const [showFilterModal, setShowFilterModal] = useState(false);
+  const [showFilterDropdown, setShowFilterDropdown] = useState(false);
   const [editingUser, setEditingUser] = useState(null);
   const [userToDelete, setUserToDelete] = useState(null);
   const [deleting, setDeleting] = useState(false);
@@ -49,7 +49,7 @@ export default function UserPage() {
   const [filters, setFilters] = useState({
     userType: '',
     userRole: '',
-    app: ''
+    'app._id': ''
   });
   const userTableRef = useRef();
   const [formData, setFormData] = useState({
@@ -97,6 +97,20 @@ export default function UserPage() {
     fetchApps();
     fetchUsers();
   }, []);
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (showFilterDropdown && !event.target.closest('.filter-dropdown')) {
+        setShowFilterDropdown(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [showFilterDropdown]);
 
   const createDefaultApp = async () => {
     try {
@@ -175,7 +189,7 @@ export default function UserPage() {
     setFilters({
       userType: '',
       userRole: '',
-      app: ''
+      'app._id': ''
     });
     setSearchTerm('');
   };
@@ -302,44 +316,22 @@ export default function UserPage() {
   };
 
   const getUserTypeColor = (userType) => {
-    switch (userType?.toLowerCase()) {
+    switch (userType) {
       case 'state': return 'bg-blue-100 text-blue-700 border-blue-200';
       case 'district': return 'bg-green-100 text-green-700 border-green-200';
       case 'area': return 'bg-yellow-100 text-yellow-700 border-yellow-200';
       case 'halqa': return 'bg-orange-100 text-orange-700 border-orange-200';
       case 'member': return 'bg-pink-100 text-pink-700 border-pink-200';
-      case 'membersgroup': return 'bg-indigo-100 text-indigo-700 border-indigo-200';
+      case 'membersGroup': return 'bg-indigo-100 text-indigo-700 border-indigo-200';
       default: return 'bg-gray-100 text-gray-700 border-gray-200';
     }
   };
 
   const getRoleColor = (role) => {
-    switch (role?.toLowerCase()) {
+    switch (role) {
       case 'admin': return 'bg-purple-100 text-purple-700 border-purple-200';
-      case 'user': return 'bg-teal-100 text-teal-700 border-teal-200';
+      case 'user': return 'bg-gray-100 text-gray-700 border-gray-200';
       default: return 'bg-gray-100 text-gray-700 border-gray-200';
-    }
-  };
-
-  const formatUserType = (type) => {
-    if (!type) return 'N/A';
-    switch (type.toLowerCase()) {
-      case 'state': return 'State';
-      case 'district': return 'District';
-      case 'area': return 'Area';
-      case 'halqa': return 'Halqa';
-      case 'member': return 'Member';
-      case 'membersgroup': return 'Members Group';
-      default: return type;
-    }
-  };
-
-  const formatUserRole = (role) => {
-    if (!role) return 'N/A';
-    switch (role.toLowerCase()) {
-      case 'admin': return 'Admin';
-      case 'user': return 'User';
-      default: return role;
     }
   };
 
@@ -378,18 +370,112 @@ export default function UserPage() {
                 </div>
               </div>
               <div className="flex items-center gap-2 sm:gap-3">
-                <button 
-                  onClick={() => setShowFilterModal(true)}
-                  className="flex items-center space-x-2 text-sm font-medium text-gray-600 bg-gray-100/60 hover:bg-gray-100 rounded-lg px-3 py-2 transition-colors"
-                >
-                  <FiFilter className="w-4 h-4" />
-                  <span>Filter</span>
-                  {(filters.userType || filters.userRole || filters.app) && (
-                    <span className="bg-[#5041BC] text-white text-xs rounded-full px-1.5 py-0.5 ml-1">
-                      {[filters.userType, filters.userRole, filters.app].filter(Boolean).length}
-                    </span>
+                {/* Filter Dropdown */}
+                <div className="relative filter-dropdown">
+                  <button 
+                    onClick={() => setShowFilterDropdown(!showFilterDropdown)}
+                    className="flex items-center space-x-2 text-sm font-medium text-gray-600 bg-gray-100/60 hover:bg-gray-100 rounded-lg px-3 py-2 transition-colors"
+                  >
+                    <FiFilter className="w-4 h-4" />
+                    <span>Filter</span>
+                    {(filters.userType || filters.userRole || filters['app._id']) && (
+                      <span className="bg-[#5041BC] text-white text-xs rounded-full px-1.5 py-0.5 ml-1">
+                        {[filters.userType, filters.userRole, filters['app._id']].filter(Boolean).length}
+                      </span>
+                    )}
+                    <FiChevronDown className={`w-4 h-4 transition-transform ${showFilterDropdown ? 'rotate-180' : ''}`} />
+                  </button>
+
+                  {/* Dropdown Menu */}
+                  {showFilterDropdown && (
+                    <div className="absolute right-0 mt-2 w-72 bg-white rounded-lg shadow-lg border border-gray-200 z-50">
+                      <div className="p-4 space-y-4">
+                        <div className="flex items-center justify-between border-b border-gray-200 pb-2">
+                          <h3 className="text-sm font-semibold text-gray-700">Filter Options</h3>
+                          <button
+                            onClick={() => setShowFilterDropdown(false)}
+                            className="text-gray-400 hover:text-gray-600"
+                          >
+                            <FiX className="w-4 h-4" />
+                          </button>
+                        </div>
+
+                        {/* User Type Filter */}
+                        <div>
+                          <label className="block text-xs font-medium text-gray-700 mb-1">User Type</label>
+                          <select
+                            name="userType"
+                            value={filters.userType}
+                            onChange={handleFilterChange}
+                            className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-[#5041BC] focus:border-[#5041BC]"
+                          >
+                            <option value="">All Types</option>
+                            {userTypes.map(type => (
+                              <option key={type.value} value={type.value}>
+                                {type.label}
+                              </option>
+                            ))}
+                          </select>
+                        </div>
+
+                        {/* User Role Filter */}
+                        <div>
+                          <label className="block text-xs font-medium text-gray-700 mb-1">User Role</label>
+                          <select
+                            name="userRole"
+                            value={filters.userRole}
+                            onChange={handleFilterChange}
+                            className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-[#5041BC] focus:border-[#5041BC]"
+                          >
+                            <option value="">All Roles</option>
+                            {userRoles.map(role => (
+                              <option key={role.value} value={role.value}>
+                                {role.label}
+                              </option>
+                            ))}
+                          </select>
+                        </div>
+
+                        {/* App Filter */}
+                        <div>
+                          <label className="block text-xs font-medium text-gray-700 mb-1">App</label>
+                          <select
+                            name="app._id"
+                            value={filters["app._id"]}
+                            onChange={handleFilterChange}
+                            className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-[#5041BC] focus:border-[#5041BC]"
+                          >
+                            <option value="">All Apps</option>
+                            {apps.map(app => (
+                              <option key={app._id} value={app._id}>
+                                {app.title}
+                              </option>
+                            ))}
+                          </select>
+                        </div>
+
+                        {/* Actions */}
+                        <div className="flex gap-2 pt-2 border-t border-gray-200">
+                          <button
+                            onClick={() => {
+                              clearFilters();
+                              setShowFilterDropdown(false);
+                            }}
+                            className="flex-1 px-3 py-1.5 text-xs border border-gray-300 rounded text-gray-700 hover:bg-gray-50 font-medium"
+                          >
+                            Clear All
+                          </button>
+                          <button
+                            onClick={() => setShowFilterDropdown(false)}
+                            className="flex-1 px-3 py-1.5 text-xs bg-[#5041BC] text-white rounded hover:bg-[#6C63FF] font-medium"
+                          >
+                            Apply
+                          </button>
+                        </div>
+                      </div>
+                    </div>
                   )}
-                </button>
+                </div>
                 <button 
                   onClick={() => setShowCreateForm(true)}
                   className="flex items-center space-x-2 text-sm font-medium text-white bg-gradient-to-r from-[#5041BC] to-[#6C63FF] hover:from-[#6C63FF] hover:to-[#5041BC] rounded-lg px-3 py-2 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105"
@@ -428,15 +514,29 @@ export default function UserPage() {
                     key: 'userType',
                     label: 'User Type',
                     type: 'badge',
-                    getBadgeClass: (userType) => getUserTypeColor(userType),
-                    formatValue: (userType) => formatUserType(userType)
+                    getBadgeClass: (userType) => {
+                      switch (userType?.toLowerCase()) {
+                        case 'state': return 'bg-blue-50 text-blue-800 border border-blue-200';
+                        case 'district': return 'bg-emerald-50 text-emerald-800 border border-emerald-200';
+                        case 'area': return 'bg-amber-50 text-amber-800 border border-amber-200';
+                        case 'halqa': return 'bg-orange-50 text-orange-800 border border-orange-200';
+                        case 'member': return 'bg-rose-50 text-rose-800 border border-rose-200';
+                        case 'membersgroup': return 'bg-violet-50 text-violet-800 border border-violet-200';
+                        default: return 'bg-slate-50 text-slate-700 border border-slate-200';
+                      }
+                    }
                   },
                   {
                     key: 'userRole',
                     label: 'Role',
                     type: 'badge',
-                    getBadgeClass: (userRole) => getRoleColor(userRole),
-                    formatValue: (userRole) => formatUserRole(userRole)
+                    getBadgeClass: (role) => {
+                      switch (role?.toLowerCase()) {
+                        case 'admin': return 'bg-indigo-50 text-indigo-800 border border-indigo-200';
+                        case 'user': return 'bg-gray-50 text-gray-700 border border-gray-200';
+                        default: return 'bg-slate-50 text-slate-700 border border-slate-200';
+                      }
+                    }
                   },
                   {
                     key: 'app.title',
@@ -520,102 +620,7 @@ export default function UserPage() {
         </div>
       </div>
 
-      {/* Filter Modal */}
-      {showFilterModal && (
-        <div className="fixed inset-0 z-50 overflow-y-auto">
-          <div 
-            className="fixed inset-0 bg-black/40"
-            onClick={() => setShowFilterModal(false)}
-          ></div>
-          
-          <div className="flex min-h-full items-center justify-center p-4">
-            <div className="relative bg-white rounded-lg shadow-lg w-full max-w-md">
-              <div className="bg-gradient-to-r from-gray-500 to-gray-600 px-4 py-3 rounded-t-lg">
-                <div className="flex items-center justify-between">
-                  <h3 className="text-lg font-semibold text-white">Filter Users</h3>
-                  <button
-                    onClick={() => setShowFilterModal(false)}
-                    className="text-white/80 hover:text-white p-1"
-                  >
-                    <FiX className="w-5 h-5" />
-                  </button>
-                </div>
-              </div>
 
-              <div className="p-4 space-y-4">
-                {/* User Type Filter */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">User Type</label>
-                  <select
-                    name="userType"
-                    value={filters.userType}
-                    onChange={handleFilterChange}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-[#5041BC]"
-                  >
-                    <option value="">All Types</option>
-                    {userTypes.map(type => (
-                      <option key={type.value} value={type.value}>
-                        {type.label}
-                      </option>
-                    ))}
-                  </select>
-                    </div>
-
-                {/* User Role Filter */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">User Role</label>
-                  <select
-                    name="userRole"
-                    value={filters.userRole}
-                    onChange={handleFilterChange}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-[#5041BC]"
-                  >
-                    <option value="">All Roles</option>
-                    {userRoles.map(role => (
-                      <option key={role.value} value={role.value}>
-                        {role.label}
-                      </option>
-                    ))}
-                  </select>
-                      </div>
-
-                {/* App Filter */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">App</label>
-                  <select
-                    name="app"
-                    value={filters.app}
-                    onChange={handleFilterChange}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-[#5041BC]"
-                  >
-                    <option value="">All Apps</option>
-                    {apps.map(app => (
-                      <option key={app._id} value={app._id}>
-                        {app.title}
-                      </option>
-                    ))}
-                  </select>
-                      </div>
-
-                <div className="flex gap-2 pt-2">
-                  <button
-                    onClick={clearFilters}
-                    className="flex-1 px-3 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50"
-                  >
-                    Clear All
-                  </button>
-                    <button
-                    onClick={() => setShowFilterModal(false)}
-                    className="flex-1 px-3 py-2 bg-[#5041BC] text-white rounded-md hover:bg-[#6C63FF]"
-                  >
-                    Apply
-                    </button>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
 
       {/* View User Modal - Simplified */}
       {showViewModal && (
@@ -666,15 +671,15 @@ export default function UserPage() {
                       <div>
                         <label className="text-gray-500 text-xs">Type</label>
                         <div className={`mt-1 px-2 py-1 rounded text-xs font-medium ${getUserTypeColor(viewUserDetails.userType)}`}>
-                          {formatUserType(viewUserDetails.userType)}
-                        </div>
-                      </div>
+                          {viewUserDetails.userType?.charAt(0).toUpperCase() + viewUserDetails.userType?.slice(1) || 'N/A'}
+                  </div>
+                    </div>
                       <div>
                         <label className="text-gray-500 text-xs">Role</label>
                         <div className={`mt-1 px-2 py-1 rounded text-xs font-medium ${getRoleColor(viewUserDetails.userRole)}`}>
-                          {formatUserRole(viewUserDetails.userRole)}
-                        </div>
+                          {viewUserDetails.userRole?.charAt(0).toUpperCase() + viewUserDetails.userRole?.slice(1) || 'N/A'}
                       </div>
+                        </div>
                       <div className="col-span-2">
                         <label className="text-gray-500 text-xs">App</label>
                         <div className="mt-1 text-gray-900">{viewUserDetails.app?.title || 'No app assigned'}</div>
@@ -746,7 +751,14 @@ export default function UserPage() {
             label: 'Type',
             type: 'select',
             required: true,
-            options: userTypes,
+            options: [
+              { value: 'state', label: 'State' },
+              { value: 'district', label: 'District' },
+              { value: 'area', label: 'Area' },
+              { value: 'halqa', label: 'Halqa' },
+              { value: 'member', label: 'Member' },
+              { value: 'membersGroup', label: 'Members Group' }
+            ],
             valueKey: 'value',
             labelKey: 'label'
           },
@@ -755,7 +767,10 @@ export default function UserPage() {
             label: 'Role',
             type: 'select',
             required: true,
-            options: userRoles,
+            options: [
+              { value: 'admin', label: 'Admin' },
+              { value: 'user', label: 'User' }
+            ],
             valueKey: 'value',
             labelKey: 'label'
           },

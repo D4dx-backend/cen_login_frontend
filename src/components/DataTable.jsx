@@ -74,10 +74,12 @@ const DataTable = forwardRef(({
   // Empty state
   if (data.length === 0) {
     return (
-      <div className="text-center py-12 text-gray-500">
-        {emptyState.icon && <div className="text-5xl mx-auto mb-4">{emptyState.icon}</div>}
-        <h3 className="text-xl font-semibold mb-2">{emptyState.title || 'No data found'}</h3>
-        <p>{emptyState.description || 'Data will appear here once available.'}</p>
+      <div className="flex items-center justify-center min-h-[180px] w-full">
+        <div className="text-center max-w-xs w-full mx-auto bg-white border border-gray-200 rounded-xl shadow-sm p-4">
+          {emptyState.icon && <div className="text-4xl mx-auto mb-2">{emptyState.icon}</div>}
+          <h3 className="text-base font-semibold mb-1">{emptyState.title || 'No data found'}</h3>
+          <p className="text-sm">{emptyState.description || 'Data will appear here once available.'}</p>
+        </div>
       </div>
     );
   }
@@ -85,10 +87,12 @@ const DataTable = forwardRef(({
   // No filtered results
   if (filteredData.length === 0) {
     return (
-      <div className="text-center py-12 text-gray-500">
-        {emptyState.icon && <div className="text-4xl mx-auto mb-4">{emptyState.icon}</div>}
-        <h3 className="text-lg font-semibold mb-2">No items match your criteria</h3>
-        <p className="text-sm">Try adjusting your search or filters</p>
+      <div className="flex items-center justify-center min-h-[180px] w-full">
+        <div className="text-center max-w-xs w-full mx-auto bg-white border border-gray-200 rounded-xl shadow-sm p-4">
+          {emptyState.icon && <div className="text-3xl mx-auto mb-2">{emptyState.icon}</div>}
+          <h3 className="text-base font-semibold mb-1">No items match your criteria</h3>
+          <p className="text-sm">Try adjusting your search or filters</p>
+        </div>
       </div>
     );
   }
