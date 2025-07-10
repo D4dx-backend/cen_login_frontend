@@ -213,51 +213,27 @@ const CreateModal = ({
     switch (type) {
       case 'select':
         let selectOptions = [];
-        if (dependsOn && dependencyData[dependsOn]) {
+        if (options && Array.isArray(options) && options.length > 0) {
+          selectOptions = options;
+        } else if (dependsOn && dependencyData[dependsOn]) {
           selectOptions = dependencyData[dependsOn];
-          
+
           // Filter options based on parent selection
           if (filterBy && formData[filterBy]) {
-            console.log(`CreateModal: Filtering ${name} options based on ${filterBy}:`, {
-              allOptions: selectOptions,
-              filterBy,
-              filterValue: formData[filterBy]
-            });
-            
             selectOptions = selectOptions.filter(option => {
-              // Handle both cases where parent field might be an object or just an ID
               let optionParentId;
               if (name === 'area') {
                 optionParentId = option.district?._id || option.district;
               } else if (name === 'membersGroup') {
                 optionParentId = option.area?._id || option.area;
               }
-              
-              const matches = optionParentId === formData[filterBy];
-              
-              console.log('CreateModal: Filtering option:', {
-                option,
-                optionParentId,
-                filterValue: formData[filterBy],
-                matches
-              });
-              
-              return matches;
+              return optionParentId === formData[filterBy];
             });
           }
-
-          console.log(`CreateModal: Final select options for ${name}:`, {
-            dependsOn,
-            filteredOptions: selectOptions,
-            currentValue: formData[name],
-            filterBy,
-            filterValue: filterBy ? formData[filterBy] : undefined
-          });
         }
 
-        const isLoading = dependencyLoading[dependsOn];
-        const isDisabled = disabled || isLoading || 
-          (filterBy && !formData[filterBy]);
+        const isLoading = dependsOn ? dependencyLoading[dependsOn] : false;
+        const isDisabled = disabled || isLoading || (filterBy && !formData[filterBy]);
 
         return (
           <select
@@ -269,23 +245,14 @@ const CreateModal = ({
             required={required}
           >
             <option value="">
-              {isLoading ? 'Loading...' : 
-               isDisabled ? `Select ${filterBy} first` :
-               `Select ${label.toLowerCase()}`}
+              {isLoading ? 'Loading...' :
+                isDisabled ? `Select ${filterBy} first` :
+                `Select ${label.toLowerCase()}`}
             </option>
             {selectOptions.map((option) => {
-              const optionValue = option[valueKey];
-              const optionLabel = option[labelKey];
-              
-              if (!optionValue || !optionLabel) {
-                console.warn('CreateModal: Invalid option:', {
-                  option,
-                  valueKey,
-                  labelKey
-                });
-                return null;
-              }
-
+              const optionValue = option[valueKey] ?? option.value;
+              const optionLabel = option[labelKey] ?? option.label;
+              if (!optionValue || !optionLabel) return null;
               return (
                 <option key={optionValue} value={optionValue}>
                   {optionLabel}
@@ -296,9 +263,10 @@ const CreateModal = ({
         );
 
       case 'text':
+      case 'tel':
         return (
           <input
-            type="text"
+            type={type}
             name={name}
             value={formData[name] || ''}
             onChange={handleInputChange}
