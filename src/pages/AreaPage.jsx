@@ -38,6 +38,8 @@ export default function AreaPage() {
   const [areaToDelete, setAreaToDelete] = useState(null);
   const [deleting, setDeleting] = useState(false);
   const tableRef = useRef();
+  const [filterDistrict, setFilterDistrict] = useState('');
+  const [showFilterDropdown, setShowFilterDropdown] = useState(false);
 
   useEffect(() => {
     fetchData();
@@ -153,6 +155,11 @@ export default function AreaPage() {
     setShowEditForm(false);
   };
 
+  // Filtered areas based on selected district
+  const filteredAreas = filterDistrict
+    ? areas.filter(area => area.district && area.district._id === filterDistrict)
+    : areas;
+
   return (
     <div className="min-h-screen relative bg-[#e3e6eb] overflow-hidden" style={{ fontFamily: 'Nunito, sans-serif' }}>
       <PageBackground />
@@ -161,45 +168,74 @@ export default function AreaPage() {
       </div>
       <div className="relative z-20 flex flex-col min-h-screen transition-all duration-300 ease-in-out" style={{ marginLeft: 'var(--sidebar-width, 224px)' }}>
         {/* Profile Button - Top Right */}
-        <div className="absolute top-4 right-4 z-30">
+        <div className="absolute top-4 right-4 z-30 flex flex-col items-end gap-2">
           <ProfileButton />
+          <div className="flex flex-row gap-2 mt-2 relative">
+            <button
+              className="flex items-center space-x-2 text-sm font-medium text-violet-700 bg-violet-100 hover:bg-violet-200 rounded-lg px-3 py-2 transition-all duration-200"
+              onClick={() => setShowFilterDropdown(v => !v)}
+            >
+              <FiMap className="w-4 h-4" />
+              <span>Filter</span>
+            </button>
+            {showFilterDropdown && (
+              <div className="absolute top-12 right-0 bg-white border border-gray-200 rounded-lg shadow-lg p-3 z-50 min-w-[180px]">
+                <label className="block text-xs font-semibold mb-1">Filter by District</label>
+                <select
+                  className="w-full border border-gray-300 rounded px-2 py-1 text-sm mb-2"
+                  value={filterDistrict}
+                  onChange={e => { setFilterDistrict(e.target.value); setShowFilterDropdown(false); }}
+                >
+                  <option value="">All Districts</option>
+                  {districts.map(d => (
+                    <option key={d._id} value={d._id}>{d.title}</option>
+                  ))}
+                </select>
+                {filterDistrict && (
+                  <button
+                    className="w-full text-xs text-gray-600 bg-gray-100 rounded px-2 py-1 hover:bg-gray-200"
+                    onClick={() => { setFilterDistrict(''); setShowFilterDropdown(false); }}
+                  >
+                    Clear Filter
+                  </button>
+                )}
+              </div>
+            )}
+            <button 
+              onClick={() => setShowCreateForm(true)}
+              className="flex items-center space-x-2 text-sm font-medium text-white bg-gradient-to-r from-[#5041BC] to-[#6C63FF] hover:from-[#6C63FF] hover:to-[#5041BC] rounded-lg px-3 py-2 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105"
+            >
+              <FiPlus className="w-4 h-4" />
+              <span className="hidden sm:inline">Create Area</span>
+              <span className="sm:hidden">Create</span>
+            </button>
+          </div>
         </div>
         
-        <div className="flex-1 flex flex-col p-4 pt-16">
-          <main className="flex-1 min-w-0 mt-4">
+        <div className="flex-1 flex flex-col p-4 pt-8">
+          <main className="flex-1 min-w-0 mt-4 sm:mt-6 md:mt-4">
             {/* Heading */}
-            <h2 className="text-2xl font-extrabold bg-gradient-to-r from-[#5041BC] via-[#6C63FF] to-[#8B7EFF] bg-clip-text text-transparent mb-4">Area Management</h2>
+            <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-extrabold bg-gradient-to-r from-[#5041BC] via-[#6C63FF] to-[#8B7EFF] bg-clip-text text-transparent mb-2 tracking-tight leading-normal pb-1 pr-4 sm:pr-8 md:pr-0">Area Management</h2>
             {/* Toolbar */}
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-4">
-              <div className="flex items-center w-full sm:w-auto gap-2">
-                {/* Empty space for consistency with UserPage layout */}
-              </div>
-              <div className="flex items-center gap-2 sm:gap-3">
-              <button 
-                onClick={() => setShowCreateForm(true)}
-                  className="flex items-center space-x-2 text-sm font-medium text-white bg-gradient-to-r from-[#5041BC] to-[#6C63FF] hover:from-[#6C63FF] hover:to-[#5041BC] rounded-lg px-3 py-2 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105"
-              >
-                <FiPlus className="w-4 h-4" />
-                <span>Create Area</span>
-              </button>
-              </div>
+            <div className="flex flex-row items-center justify-end gap-2 mb-4 sm:mb-6 md:mb-4">
+              {/* The Filter button is now moved to the right */}
             </div>
             
             {/* Area Table */}
-            <div className="bg-white rounded-xl shadow-lg p-4">
+            <div className="bg-white rounded-xl shadow-lg p-4 max-h-[86vh] overflow-y-auto mt-16 sm:mt-8 md:mt-0">
               <DataTable
                 ref={tableRef}
-                data={areas}
+                data={filteredAreas}
                 loading={loading}
                 error={error}
                 onRetry={fetchData}
                 onRefresh={fetchData}
                 emptyState={{
-                  icon: <FiMapPin />,
+                  icon: <FiMapPin />, 
                   title: "No areas found",
                   description: "Create a new area to get started"
                 }}
-                columns={[
+                columns={[ 
                   {
                     key: 'title',
                     label: 'Area',
@@ -219,7 +255,7 @@ export default function AreaPage() {
                     type: 'date'
                   }
                 ]}
-                actions={[
+                actions={[ 
                   {
                     icon: FiEdit,
                     title: "Edit Area",

@@ -172,29 +172,25 @@ export default function DistrictPage() {
       </div>
       <div className="relative z-20 flex flex-col min-h-screen transition-all duration-300 ease-in-out" style={{ marginLeft: 'var(--sidebar-width, 224px)' }}>
         {/* Profile Button - Top Right */}
-        <div className="absolute top-4 right-4 z-30">
+        <div className="absolute top-4 right-4 z-30 flex flex-col items-end gap-2">
           <ProfileButton />
+          <div className="flex flex-row gap-2 mt-2">
+            <button 
+              onClick={() => setShowCreateForm(true)}
+              className="flex items-center space-x-2 text-sm font-medium text-white bg-gradient-to-r from-[#5041BC] to-[#6C63FF] hover:from-[#6C63FF] hover:to-[#5041BC] rounded-lg px-3 py-2 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105"
+            >
+              <FiPlus className="w-4 h-4" />
+              <span className="hidden sm:inline">Create District</span>
+              <span className="sm:hidden">Create</span>
+            </button>
+          </div>
         </div>
         
-        <div className="flex-1 flex flex-col p-4 pt-16">
-          <main className="flex-1 min-w-0 mt-4">
+        <div className="flex-1 flex flex-col p-4 pt-8">
+          <main className="flex-1 min-w-0 mt-4 sm:mt-6 md:mt-4">
             {/* Heading */}
-            <h2 className="text-2xl font-extrabold bg-gradient-to-r from-[#5041BC] via-[#6C63FF] to-[#8B7EFF] bg-clip-text text-transparent mb-4">District Management</h2>
-            {/* Toolbar */}
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-4">
-              <div className="flex items-center w-full sm:w-auto gap-2">
-                {/* Empty space for consistency with UserPage layout */}
-              </div>
-              <div className="flex items-center gap-2 sm:gap-3">
-              <button 
-                onClick={() => setShowCreateForm(true)}
-                  className="flex items-center space-x-2 text-sm font-medium text-white bg-gradient-to-r from-[#5041BC] to-[#6C63FF] hover:from-[#6C63FF] hover:to-[#5041BC] rounded-lg px-3 py-2 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105"
-              >
-                <FiPlus className="w-4 h-4" />
-                <span>Create District</span>
-              </button>
-              </div>
-            </div>
+            <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-extrabold bg-gradient-to-r from-[#5041BC] via-[#6C63FF] to-[#8B7EFF] bg-clip-text text-transparent mb-2 tracking-tight leading-normal pb-1 pr-4 sm:pr-8 md:pr-0">District Management</h2>
+            <div className="mb-4 sm:mb-6 md:mb-4"></div>
             
             {successMessage && (
               <div className="mb-4 p-3 bg-green-100 border border-green-400 text-green-700 rounded-lg text-sm">
@@ -203,7 +199,7 @@ export default function DistrictPage() {
             )}
             
             {/* District Table */}
-            <div className="bg-white rounded-xl shadow-lg p-4">
+            <div className="bg-white rounded-xl shadow-lg p-4 max-h-[86vh] overflow-y-auto mt-16 sm:mt-8 md:mt-0">
               <DataTable
                 ref={tableRef}
                 data={districts}

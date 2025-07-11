@@ -9,7 +9,7 @@ import CreateModal from '../components/CreateModal';
 import { FiPlus, FiTrash2, FiEdit, FiHome, FiLoader, FiAlertTriangle, FiX, FiMap, FiMapPin, FiUsers } from 'react-icons/fi';
 
 
-const API_BASE_URL = 'http://localhost:3000/api';
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 const api = axios.create({
   baseURL: API_BASE_URL,
@@ -45,6 +45,10 @@ export default function HalqaPage() {
     area: '',
     membersGroup: '',
   });
+
+  const [filterDistrict, setFilterDistrict] = useState('');
+  const [filterArea, setFilterArea] = useState('');
+  const [showFilterDropdown, setShowFilterDropdown] = useState(false);
 
   useEffect(() => {
     fetchData();
@@ -87,13 +91,17 @@ export default function HalqaPage() {
 
   const handleCreateHalqa = async (e) => {
     e.preventDefault();
-    if (!formData.title.trim() || !formData.district || !formData.area || !formData.membersGroup) {
-      alert('Please fill out all fields.');
+    if (!formData.title.trim() || !formData.district || !formData.area) {
+      alert('Please fill out all required fields.');
       return;
     }
 
     try {
-      await api.post('/halqas', formData);
+      const dataToSend = {
+        ...formData,
+        membersGroup: formData.membersGroup || undefined
+      };
+      await api.post('/halqas', dataToSend);
       resetForm();
       fetchData();
     } catch (error) {
@@ -104,10 +112,10 @@ export default function HalqaPage() {
 
   const handleEditHalqa = (halqa) => {
     setFormData({
-      title: halqa.title,
-      district: halqa.district._id,
-      area: halqa.area._id,
-      membersGroup: halqa.membersGroup._id,
+      title: halqa.title || '',
+      district: halqa.district?._id || '',
+      area: halqa.area?._id || '',
+      membersGroup: halqa.membersGroup?._id || '',
     });
     setIsEditing(true);
     setEditingHalqa(halqa);
@@ -116,13 +124,17 @@ export default function HalqaPage() {
 
   const handleUpdateHalqa = async (e) => {
     e.preventDefault();
-    if (!formData.title.trim() || !formData.district || !formData.area || !formData.membersGroup) {
-      alert('Please fill out all fields.');
+    if (!formData.title.trim() || !formData.district || !formData.area) {
+      alert('Please fill out all required fields.');
       return;
     }
 
     try {
-      await api.put(`/halqas/${editingHalqa._id}`, formData);
+      const dataToSend = {
+        ...formData,
+        membersGroup: formData.membersGroup || undefined
+      };
+      await api.put(`/halqas/${editingHalqa._id}`, dataToSend);
       resetForm();
       fetchData();
     } catch (error) {
@@ -160,6 +172,13 @@ export default function HalqaPage() {
     }
   };
 
+  // Filtered halqas based on selected district and area
+  const filteredHalqas = halqas.filter(halqa => {
+    const districtMatch = filterDistrict ? (halqa.district && halqa.district._id === filterDistrict) : true;
+    const areaMatch = filterArea ? (halqa.area && halqa.area._id === filterArea) : true;
+    return districtMatch && areaMatch;
+  });
+
   return (
     <div className="min-h-screen relative bg-[#e3e6eb] overflow-hidden" style={{ fontFamily: 'Nunito, sans-serif' }}>
       <PageBackground />
@@ -168,42 +187,80 @@ export default function HalqaPage() {
       </div>
       <div className="relative z-20 flex flex-col min-h-screen transition-all duration-300 ease-in-out" style={{ marginLeft: 'var(--sidebar-width, 224px)' }}>
         {/* Profile Button - Top Right */}
-        <div className="absolute top-4 right-4 z-30">
+        <div className="absolute top-4 right-4 z-30 flex flex-col items-end gap-2">
           <ProfileButton />
+          <div className="flex flex-row gap-2 mt-2 relative">
+            <button
+              className="flex items-center space-x-2 text-sm font-medium text-violet-700 bg-violet-100 hover:bg-violet-200 rounded-lg px-3 py-2 transition-all duration-200"
+              onClick={() => setShowFilterDropdown(v => !v)}
+            >
+              <FiMap className="w-4 h-4" />
+              <span>Filter</span>
+            </button>
+            {showFilterDropdown && (
+              <div className="absolute top-12 right-0 bg-white border border-gray-200 rounded-lg shadow-lg p-3 z-50 min-w-[220px]">
+                <label className="block text-xs font-semibold mb-1">Filter by District</label>
+                <select
+                  className="w-full border border-gray-300 rounded px-2 py-1 text-sm mb-2"
+                  value={filterDistrict}
+                  onChange={e => {
+                    setFilterDistrict(e.target.value);
+                    setFilterArea(''); // Reset area filter when district changes
+                  }}
+                >
+                  <option value="">All Districts</option>
+                  {districts.map(d => (
+                    <option key={d._id} value={d._id}>{d.title}</option>
+                  ))}
+                </select>
+                <label className="block text-xs font-semibold mb-1 mt-2">Filter by Area</label>
+                <select
+                  className="w-full border border-gray-300 rounded px-2 py-1 text-sm mb-2"
+                  value={filterArea}
+                  onChange={e => setFilterArea(e.target.value)}
+                  disabled={!filterDistrict}
+                >
+                  <option value="">{filterDistrict ? 'All Areas' : 'Select District First'}</option>
+                  {areas.filter(a => !filterDistrict || (a.district && a.district._id === filterDistrict)).map(a => (
+                    <option key={a._id} value={a._id}>{a.title}</option>
+                  ))}
+                </select>
+                {(filterDistrict || filterArea) && (
+                  <button
+                    className="w-full text-xs text-gray-600 bg-gray-100 rounded px-2 py-1 hover:bg-gray-200"
+                    onClick={() => { setFilterDistrict(''); setFilterArea(''); setShowFilterDropdown(false); }}
+                  >
+                    Clear Filter
+                  </button>
+                )}
+              </div>
+            )}
+            <button 
+              onClick={() => setShowCreateForm(true)}
+              className="flex items-center space-x-2 text-sm font-medium text-white bg-gradient-to-r from-[#5041BC] to-[#6C63FF] hover:from-[#6C63FF] hover:to-[#5041BC] rounded-lg px-3 py-2 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105"
+            >
+              <FiPlus className="w-4 h-4" />
+              <span className="hidden sm:inline">Create Halqa</span>
+              <span className="sm:hidden">Create</span>
+            </button>
+          </div>
         </div>
         
-        <div className="flex-1 flex flex-col p-4 pt-16">
-          <main className="flex-1 min-w-0 mt-4">
+        <div className="flex-1 flex flex-col p-4 pt-8">
+          <main className="flex-1 min-w-0 mt-4 sm:mt-6 md:mt-4">
             {/* Heading */}
-            <h1 className="text-2xl font-extrabold bg-gradient-to-r from-[#5041BC] via-[#6C63FF] to-[#8B7EFF] bg-clip-text text-transparent mb-4">Halqa Management</h1>
-            
-            {/* Toolbar */}
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-4">
-              <div className="flex items-center w-full sm:w-auto gap-2">
-                {/* Empty space for consistency with UserPage layout */}
-              </div>
-              <div className="flex items-center gap-2 sm:gap-3">
-              <button 
-                onClick={() => setShowCreateForm(true)}
-                  className="flex items-center space-x-2 text-sm font-medium text-white bg-gradient-to-r from-[#5041BC] to-[#6C63FF] hover:from-[#6C63FF] hover:to-[#5041BC] rounded-lg px-3 py-2 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105"
-              >
-                <FiPlus className="w-4 h-4" />
-                <span>Create Halqa</span>
-              </button>
-            </div>
-                </div>
-
+            <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-extrabold bg-gradient-to-r from-[#5041BC] via-[#6C63FF] to-[#8B7EFF] bg-clip-text text-transparent mb-2 tracking-tight leading-normal pb-1 pr-4 sm:pr-8 md:pr-0">Halqa Management</h1>
             {/* Halqa Table */}
-            <div className="bg-white rounded-xl shadow-lg p-4">
+            <div className="bg-white rounded-xl shadow-lg p-4 max-h-[82vh] overflow-y-auto mt-16 sm:mt-8 md:mt-0">
               <DataTable
                 ref={tableRef}
-                data={halqas}
+                data={filteredHalqas}
                 loading={loading}
                 error={error}
                 onRetry={fetchData}
                 onRefresh={fetchData}
                 emptyState={{
-                  icon: <FiHome />,
+                  icon: <FiHome />, 
                   title: "No halqas found",
                   description: "Create a new halqa to get started"
                 }}
@@ -231,7 +288,8 @@ export default function HalqaPage() {
                     key: 'membersGroup.title',
                     label: 'Members Group',
                     type: 'badge',
-                    getBadgeClass: () => 'bg-violet-50 text-violet-800 border border-violet-200'
+                    getBadgeClass: () => 'bg-violet-50 text-violet-800 border border-violet-200',
+                    getValue: (item) => item.membersGroup?.title || 'Not assigned'
                   }
                 ]}
                 actions={[
@@ -287,7 +345,7 @@ export default function HalqaPage() {
             name: 'membersGroup',
             label: 'Members Group',
             type: 'select',
-            required: true,
+            required: false,
             dependsOn: 'membersGroups',
             filterBy: 'area',
             valueKey: '_id',
@@ -404,15 +462,14 @@ export default function HalqaPage() {
 
                   {/* Members Group */}
                   <div>
-                    <label className="block text-xs font-medium text-gray-700 mb-1">Members Group *</label>
+                    <label className="block text-xs font-medium text-gray-700 mb-1">Members Group</label>
                     <select
                       name="membersGroup"
-                      required
                       value={formData.membersGroup}
                       onChange={handleInputChange}
                       className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-violet-600 bg-white"
                     >
-                      <option value="">Select group</option>
+                      <option value="">Select group (optional)</option>
                       {membersGroups.map(m => (
                         <option key={m._id} value={m._id}>{m.title}</option>
                       ))}

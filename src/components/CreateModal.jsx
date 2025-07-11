@@ -217,7 +217,7 @@ const CreateModal = ({
           selectOptions = options;
         } else if (dependsOn && dependencyData[dependsOn]) {
           selectOptions = dependencyData[dependsOn];
-
+          
           // Filter options based on parent selection
           if (filterBy && formData[filterBy]) {
             selectOptions = selectOptions.filter(option => {
@@ -245,9 +245,9 @@ const CreateModal = ({
             required={required}
           >
             <option value="">
-              {isLoading ? 'Loading...' :
-                isDisabled ? `Select ${filterBy} first` :
-                `Select ${label.toLowerCase()}`}
+              {isLoading ? 'Loading...' : 
+               isDisabled ? `Select ${filterBy} first` :
+               `Select ${label.toLowerCase()}`}
             </option>
             {selectOptions.map((option) => {
               const optionValue = option[valueKey] ?? option.value;

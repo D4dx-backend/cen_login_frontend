@@ -9,7 +9,7 @@ import CreateModal from '../components/CreateModal';
 import { FiPlus, FiTrash2, FiEdit, FiUsers, FiLoader, FiAlertTriangle, FiX, FiSave, FiMapPin, FiMap } from 'react-icons/fi';
 
 
-const API_BASE_URL = 'http://localhost:3000/api';
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 const api = axios.create({
   baseURL: API_BASE_URL,
@@ -46,6 +46,10 @@ export default function MemberGroupPage() {
     district: '',
     area: '',
   });
+
+  const [filterDistrict, setFilterDistrict] = useState('');
+  const [filterArea, setFilterArea] = useState('');
+  const [showFilterDropdown, setShowFilterDropdown] = useState(false);
 
   useEffect(() => {
     console.log('MemberGroupPage: Initial useEffect triggered');
@@ -239,6 +243,13 @@ export default function MemberGroupPage() {
     return area.district === formData.district;
   });
 
+  // Filtered membersGroups based on selected district and area
+  const filteredMembersGroups = membersGroups.filter(group => {
+    const districtMatch = filterDistrict ? (group.district && group.district._id === filterDistrict) : true;
+    const areaMatch = filterArea ? (group.area && group.area._id === filterArea) : true;
+    return districtMatch && areaMatch;
+  });
+
   // Debug logging
   console.log('All areas:', areas);
   console.log('Form data:', formData);
@@ -252,27 +263,76 @@ export default function MemberGroupPage() {
       </div>
       <div className="relative z-20 flex flex-col min-h-screen transition-all duration-300 ease-in-out" style={{ marginLeft: 'var(--sidebar-width, 224px)' }}>
         {/* Profile Button - Top Right */}
-        <div className="absolute top-4 right-4 z-30">
+        <div className="absolute top-4 right-4 z-30 flex flex-col items-end gap-2">
           <ProfileButton />
+          <div className="flex flex-row gap-2 mt-2 relative">
+            <button
+              className="flex items-center space-x-2 text-sm font-medium text-violet-700 bg-violet-100 hover:bg-violet-200 rounded-lg px-3 py-2 transition-all duration-200"
+              onClick={() => setShowFilterDropdown(v => !v)}
+            >
+              <FiMap className="w-4 h-4" />
+              <span>Filter</span>
+            </button>
+            {showFilterDropdown && (
+              <div className="absolute top-12 right-0 bg-white border border-gray-200 rounded-lg shadow-lg p-3 z-50 min-w-[220px]">
+                <label className="block text-xs font-semibold mb-1">Filter by District</label>
+                <select
+                  className="w-full border border-gray-300 rounded px-2 py-1 text-sm mb-2"
+                  value={filterDistrict}
+                  onChange={e => {
+                    setFilterDistrict(e.target.value);
+                    setFilterArea(''); // Reset area filter when district changes
+                  }}
+                >
+                  <option value="">All Districts</option>
+                  {districts.map(d => (
+                    <option key={d._id} value={d._id}>{d.title}</option>
+                  ))}
+                </select>
+                <label className="block text-xs font-semibold mb-1 mt-2">Filter by Area</label>
+                <select
+                  className="w-full border border-gray-300 rounded px-2 py-1 text-sm mb-2"
+                  value={filterArea}
+                  onChange={e => setFilterArea(e.target.value)}
+                  disabled={!filterDistrict}
+                >
+                  <option value="">{filterDistrict ? 'All Areas' : 'Select District First'}</option>
+                  {areas.filter(a => !filterDistrict || (a.district && a.district._id === filterDistrict)).map(a => (
+                    <option key={a._id} value={a._id}>{a.title}</option>
+                  ))}
+                </select>
+                {(filterDistrict || filterArea) && (
+                  <button
+                    className="w-full text-xs text-gray-600 bg-gray-100 rounded px-2 py-1 hover:bg-gray-200"
+                    onClick={() => { setFilterDistrict(''); setFilterArea(''); setShowFilterDropdown(false); }}
+                  >
+                    Clear Filter
+                  </button>
+                )}
+              </div>
+            )}
+            <button 
+              onClick={() => setShowCreateForm(true)}
+              className="flex items-center space-x-2 text-sm font-medium text-white bg-gradient-to-r from-[#5041BC] to-[#6C63FF] hover:from-[#6C63FF] hover:to-[#5041BC] rounded-lg px-3 py-2 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105"
+            >
+              <FiPlus className="w-4 h-4" />
+              <span className="hidden sm:inline">Create Members Group</span>
+              <span className="sm:hidden">Create</span>
+            </button>
+          </div>
         </div>
         
-        <div className="flex-1 flex flex-col p-4 pt-16">
-          <main className="flex-1 min-w-0 mt-4">
+        <div className="flex-1 flex flex-col p-4 pt-8">
+          <main className="flex-1 min-w-0 mt-4 sm:mt-6 md:mt-4">
             {/* Heading */}
-            <h2 className="text-2xl font-extrabold bg-gradient-to-r from-[#5041BC] via-[#6C63FF] to-[#8B7EFF] bg-clip-text text-transparent mb-4">Members Group Management</h2>
+            <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-extrabold bg-gradient-to-r from-[#5041BC] via-[#6C63FF] to-[#8B7EFF] bg-clip-text text-transparent mb-2 tracking-tight leading-normal pb-1 pr-4 sm:pr-8 md:pr-0">Members Group Management</h2>
+            <div className="mb-4 sm:mb-6 md:mb-4"></div>
             {/* Toolbar */}
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-4">
               <div className="flex items-center w-full sm:w-auto gap-2">
                 {/* Empty space for consistency with UserPage layout */}
               </div>
               <div className="flex items-center gap-2 sm:gap-3">
-              <button 
-                onClick={() => setShowCreateForm(true)}
-                  className="flex items-center space-x-2 text-sm font-medium text-white bg-gradient-to-r from-[#5041BC] to-[#6C63FF] hover:from-[#6C63FF] hover:to-[#5041BC] rounded-lg px-3 py-2 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105"
-              >
-                <FiPlus className="w-4 h-4" />
-                <span>Create Members Group</span>
-              </button>
               </div>
             </div>
             
@@ -283,10 +343,10 @@ export default function MemberGroupPage() {
             )}
             
             {/* Members Group Table */}
-            <div className="bg-white rounded-xl shadow-lg p-4">
+            <div className="bg-white rounded-xl shadow-lg p-4 max-h-[86vh] overflow-y-auto mt-16 sm:mt-8 md:mt-0">
               <DataTable
                 ref={tableRef}
-                data={membersGroups}
+                data={filteredMembersGroups}
                 loading={loading}
                 error={error}
                 onRetry={fetchData}

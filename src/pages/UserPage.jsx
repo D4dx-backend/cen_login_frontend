@@ -10,7 +10,7 @@ import CreateModal from '../components/CreateModal';
 
 import { FiPlus, FiFilter, FiSearch, FiX, FiUser, FiPhone, FiShield, FiSmartphone, FiEdit, FiAlertTriangle, FiTrash2, FiEye, FiCalendar, FiClock, FiChevronDown } from 'react-icons/fi';
 
-const API_BASE_URL = 'http://localhost:3000/api';
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 const api = axios.create({
   baseURL: API_BASE_URL,
@@ -349,43 +349,39 @@ export default function UserPage() {
           <ProfileButton />
           </div>
         
-        <div className="flex-1 flex flex-col p-4 pt-16">
-          <main className="flex-1 min-w-0 mt-4">
+        <div className="flex-1 flex flex-col p-4 pt-8">
+          <main className="flex-1 min-w-0 mt-4 sm:mt-6 md:mt-4">
             {/* Heading */}
-            <h2 className="text-2xl font-extrabold text-[#5041BC] mb-4">User Management</h2>
-            {/* Toolbar */}
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-4">
-              <div className="flex items-center w-full sm:w-auto gap-2">
-                <div className="relative w-full sm:w-64">
-                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
-                    <FiSearch className="w-4 h-4" />
-                  </span>
-                  <input
-                    type="text"
-                    placeholder="Search users..."
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    className="pl-10 pr-3 py-2 w-full rounded-lg border border-gray-200 bg-gray-50 focus:outline-none focus:ring-2 focus:ring-[#5041BC]/30 text-sm"
-                  />
-                </div>
+            <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-extrabold text-[#5041BC] mb-2 tracking-tight leading-normal pb-1 pr-4 sm:pr-8 md:pr-0">User Management</h2>
+            {/* Toolbar: search left, filter/create right */}
+            <div className="flex flex-row items-center justify-between mb-4 gap-2">
+              <div className="relative w-full max-w-xs">
+                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
+                  <FiSearch className="w-4 h-4" />
+                </span>
+                <input
+                  type="text"
+                  placeholder="Search users..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="pl-10 pr-3 py-2 w-full rounded-lg border border-gray-200 bg-gray-50 focus:outline-none focus:ring-2 focus:ring-[#5041BC]/30 text-sm"
+                />
               </div>
-              <div className="flex items-center gap-2 sm:gap-3">
-                {/* Filter Dropdown */}
+              <div className="flex flex-row gap-2 items-center">
                 <div className="relative filter-dropdown">
-                <button 
+                  <button 
                     onClick={() => setShowFilterDropdown(!showFilterDropdown)}
-                  className="flex items-center space-x-2 text-sm font-medium text-gray-600 bg-gray-100/60 hover:bg-gray-100 rounded-lg px-3 py-2 transition-colors"
-                >
-                  <FiFilter className="w-4 h-4" />
-                  <span>Filter</span>
-                                        {(filters.userType || filters.userRole || filters['app._id']) && (
+                    className="flex items-center space-x-2 text-sm font-medium text-gray-600 bg-gray-100/60 hover:bg-gray-100 rounded-lg px-3 py-2 transition-colors"
+                  >
+                    <FiFilter className="w-4 h-4" />
+                    <span>Filter</span>
+                    {(filters.userType || filters.userRole || filters['app._id']) && (
                       <span className="bg-[#5041BC] text-white text-xs rounded-full px-1.5 py-0.5 ml-1">
                         {[filters.userType, filters.userRole, filters['app._id']].filter(Boolean).length}
                       </span>
                     )}
                     <FiChevronDown className={`w-4 h-4 transition-transform ${showFilterDropdown ? 'rotate-180' : ''}`} />
-                </button>
-
+                  </button>
                   {/* Dropdown Menu */}
                   {showFilterDropdown && (
                     <div className="absolute right-0 mt-2 w-72 bg-white rounded-lg shadow-lg border border-gray-200 z-50">
@@ -399,7 +395,6 @@ export default function UserPage() {
                             <FiX className="w-4 h-4" />
                           </button>
                         </div>
-
                         {/* User Type Filter */}
                         <div>
                           <label className="block text-xs font-medium text-gray-700 mb-1">User Type</label>
@@ -417,7 +412,6 @@ export default function UserPage() {
                             ))}
                           </select>
                         </div>
-
                         {/* User Role Filter */}
                         <div>
                           <label className="block text-xs font-medium text-gray-700 mb-1">User Role</label>
@@ -435,7 +429,6 @@ export default function UserPage() {
                             ))}
                           </select>
                         </div>
-
                         {/* App Filter */}
                         <div>
                           <label className="block text-xs font-medium text-gray-700 mb-1">App</label>
@@ -453,7 +446,6 @@ export default function UserPage() {
                             ))}
                           </select>
                         </div>
-
                         {/* Actions */}
                         <div className="flex gap-2 pt-2 border-t border-gray-200">
                           <button
@@ -481,13 +473,14 @@ export default function UserPage() {
                   className="flex items-center space-x-2 text-sm font-medium text-white bg-gradient-to-r from-[#5041BC] to-[#6C63FF] hover:from-[#6C63FF] hover:to-[#5041BC] rounded-lg px-3 py-2 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105"
                 >
                   <FiPlus className="w-4 h-4" />
-                  <span>Create User</span>
+                  <span className="hidden sm:inline">Create User</span>
+                  <span className="sm:hidden">Create</span>
                 </button>
               </div>
             </div>
 
             {/* User Table */}
-            <div className="bg-white rounded-xl shadow-lg p-4">
+            <div className="bg-white rounded-xl shadow-lg p-4 max-h-[86vh] overflow-y-auto mt-8 sm:mt-4 md:mt-0">
               <DataTable
                 ref={userTableRef} 
                 data={[...users].sort((a, b) => a.username.localeCompare(b.username))}
@@ -511,18 +504,12 @@ export default function UserPage() {
                     searchable: true
                   },
                   {
-                    key: 'mobile',
-                    label: 'Mobile',
-                    type: 'text',
-                    searchable: true
-                  },
-                  {
                     key: 'userType',
                     label: 'User Type',
                     type: 'badge',
                     getBadgeClass: (userType) => {
                       switch (userType?.toLowerCase()) {
-                        case 'state': return 'bg-blue-50 text-blue-800 border border-blue-200';
+                        case 'state': return 'bg-emerald-50 text-emerald-800 border border-emerald-200';
                         case 'district': return 'bg-emerald-50 text-emerald-800 border border-emerald-200';
                         case 'area': return 'bg-amber-50 text-amber-800 border border-amber-200';
                         case 'halqa': return 'bg-orange-50 text-orange-800 border border-orange-200';
@@ -636,13 +623,13 @@ export default function UserPage() {
             onClick={closeViewModal}
           ></div>
           
-          <div className="flex min-h-full items-center justify-center p-2">
-            <div className="relative bg-white rounded-xl shadow-xl w-full max-w-sm">
-              <div className="bg-gradient-to-r from-blue-500 to-blue-600 p-3 rounded-t-xl">
+          <div className="flex min-h-full items-center justify-center p-4">
+            <div className="relative bg-white rounded-xl shadow-xl w-full max-w-lg">
+              <div className="bg-gradient-to-r from-blue-500 to-blue-600 p-4 rounded-t-xl">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <FiEye className="w-5 h-5 text-white" />
-                    <h3 className="text-base font-bold text-white">User Details</h3>
+                    <h3 className="text-lg font-bold text-white">User Details</h3>
                   </div>
                   <button
                     onClick={closeViewModal}
@@ -655,53 +642,59 @@ export default function UserPage() {
 
               <div className="p-4">
                 {viewLoading ? (
-                  <div className="flex items-center justify-center py-4">
-                    <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-blue-500 mr-2"></div>
-                    <span className="text-gray-600 text-sm">Loading...</span>
+                  <div className="flex items-center justify-center py-6">
+                    <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-500 mr-2"></div>
+                    <span className="text-gray-600">Loading...</span>
                   </div>
                 ) : viewUserDetails ? (
                   <div className="space-y-4">
                     {/* User Profile */}
-                    <div className="flex flex-col items-center gap-2 p-2 bg-gray-50 rounded-lg">
-                      <div className="w-12 h-12 rounded-full bg-blue-500 flex items-center justify-center text-white font-bold text-xl">
+                    <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
+                      <div className="w-12 h-12 rounded-full bg-blue-500 flex items-center justify-center text-white font-bold">
                         {viewUserDetails.username?.charAt(0)?.toUpperCase() || 'U'}
-                      </div>
-                      <h4 className="font-semibold text-gray-900 text-base">{viewUserDetails.username}</h4>
+                  </div>
+                      <div>
+                        <h4 className="font-semibold text-gray-900">{viewUserDetails.username}</h4>
+                        <p className="text-gray-600 text-sm">{viewUserDetails.mobile}</p>
+                  </div>
+                  </div>
+
+                    {/* Details */}
+                    <div className="grid grid-cols-2 gap-3 text-sm">
+                      <div>
+                        <label className="text-gray-500 text-xs">Type</label>
+                        <div className={`mt-1 px-2 py-1 rounded text-xs font-medium ${getUserTypeColor(viewUserDetails.userType)}`}>
+                          {viewUserDetails.userType?.charAt(0).toUpperCase() + viewUserDetails.userType?.slice(1) || 'N/A'}
+                  </div>
                     </div>
-                    {/* Details Grid */}
-                    <div className="grid grid-cols-2 gap-x-4 gap-y-2 text-sm items-center">
-                      <div className="col-span-2 flex items-center">
-                        <span className="text-gray-500 font-medium w-20">Mobile:</span>
-                        <span className="text-gray-800">{viewUserDetails.mobile || 'N/A'}</span>
-                      </div>
                       <div>
-                        <span className="block text-gray-500 font-medium mb-0.5">Type</span>
-                        <div className={`px-2 py-1 rounded text-xs font-medium ${getUserTypeColor(viewUserDetails.userType)}`}>{viewUserDetails.userType?.charAt(0).toUpperCase() + viewUserDetails.userType?.slice(1) || 'N/A'}</div>
+                        <label className="text-gray-500 text-xs">Role</label>
+                        <div className={`mt-1 px-2 py-1 rounded text-xs font-medium ${getRoleColor(viewUserDetails.userRole)}`}>
+                          {viewUserDetails.userRole?.charAt(0).toUpperCase() + viewUserDetails.userRole?.slice(1) || 'N/A'}
                       </div>
-                      <div>
-                        <span className="block text-gray-500 font-medium mb-0.5">Role</span>
-                        <div className={`px-2 py-1 rounded text-xs font-medium ${getRoleColor(viewUserDetails.userRole)}`}>{viewUserDetails.userRole?.charAt(0).toUpperCase() + viewUserDetails.userRole?.slice(1) || 'N/A'}</div>
+                        </div>
+                      <div className="col-span-2">
+                        <label className="text-gray-500 text-xs">App</label>
+                        <div className="mt-1 text-gray-900">{viewUserDetails.app?.title || 'No app assigned'}</div>
                       </div>
                       <div className="col-span-2">
-                        <span className="block text-gray-500 font-medium mb-0.5">App</span>
-                        <div className="text-gray-900 text-xs">{viewUserDetails.app?.title || 'No app assigned'}</div>
-                      </div>
-                      <div className="col-span-2">
-                        <span className="block text-gray-500 font-medium mb-0.5">Created</span>
-                        <div className="text-gray-900 text-xs">{new Date(viewUserDetails.createdAt).toLocaleDateString()}</div>
-                      </div>
+                        <label className="text-gray-500 text-xs">Created</label>
+                        <div className="mt-1 text-gray-900">
+                          {new Date(viewUserDetails.createdAt).toLocaleDateString()}
+                  </div>
+                </div>
                     </div>
                   </div>
                 ) : (
-                  <div className="text-center py-4">
-                    <p className="text-gray-500 text-sm">Failed to load user details</p>
+                  <div className="text-center py-6">
+                    <p className="text-gray-500">Failed to load user details</p>
                   </div>
                 )}
 
-                <div className="flex gap-2 pt-3 justify-end border-t border-gray-200 mt-3">
+                <div className="flex gap-2 pt-4 justify-end border-t border-gray-200">
                   <button
                     onClick={closeViewModal}
-                    className="px-3 py-1.5 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 text-xs"
+                    className="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50"
                   >
                     Close
                   </button>
@@ -711,7 +704,7 @@ export default function UserPage() {
                         closeViewModal();
                         handleEditUser(viewingUser);
                       }}
-                      className="px-3 py-1.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-xs"
+                      className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
                     >
                       Edit
                   </button>
