@@ -6,7 +6,7 @@ import ProfileButton from '../components/ProfileButton';
 import DataTable from '../components/DataTable';
 import DeleteConfirmModal from '../components/DeleteConfirmModal';
 import CreateModal from '../components/CreateModal';
-import { FiPlus, FiTrash2, FiEdit, FiUsers, FiLoader, FiAlertTriangle, FiX, FiSave, FiMapPin, FiMap } from 'react-icons/fi';
+import { FiPlus, FiTrash2, FiEdit, FiUsers, FiLoader, FiAlertTriangle, FiX, FiSave, FiMapPin, FiMap, FiSearch, FiFilter, FiChevronDown } from 'react-icons/fi';
 
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
@@ -50,11 +50,26 @@ export default function MemberGroupPage() {
   const [filterDistrict, setFilterDistrict] = useState('');
   const [filterArea, setFilterArea] = useState('');
   const [showFilterDropdown, setShowFilterDropdown] = useState(false);
+  const [searchTerm, setSearchTerm] = useState('');
 
   useEffect(() => {
     console.log('MemberGroupPage: Initial useEffect triggered');
     fetchData();
   }, []);
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (showFilterDropdown && !event.target.closest('.filter-dropdown')) {
+        setShowFilterDropdown(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [showFilterDropdown]);
 
   const fetchData = async () => {
     console.log('MemberGroupPage: fetchData started');
@@ -243,11 +258,12 @@ export default function MemberGroupPage() {
     return area.district === formData.district;
   });
 
-  // Filtered membersGroups based on selected district and area
+  // Filtered membersGroups based on selected district, area, and search term
   const filteredMembersGroups = membersGroups.filter(group => {
     const districtMatch = filterDistrict ? (group.district && group.district._id === filterDistrict) : true;
     const areaMatch = filterArea ? (group.area && group.area._id === filterArea) : true;
-    return districtMatch && areaMatch;
+    const searchMatch = searchTerm ? group.title?.toLowerCase().includes(searchTerm.toLowerCase()) : true;
+    return districtMatch && areaMatch && searchMatch;
   });
 
   // Debug logging
@@ -263,76 +279,120 @@ export default function MemberGroupPage() {
       </div>
       <div className="relative z-20 flex flex-col min-h-screen transition-all duration-300 ease-in-out" style={{ marginLeft: 'var(--sidebar-width, 224px)' }}>
         {/* Profile Button - Top Right */}
-        <div className="absolute top-4 right-4 z-30 flex flex-col items-end gap-2">
+        <div className="absolute top-2 right-4 z-30">
           <ProfileButton />
-          <div className="flex flex-row gap-2 mt-2 relative">
-            <button
-              className="flex items-center space-x-2 text-sm font-medium text-violet-700 bg-violet-100 hover:bg-violet-200 rounded-lg px-3 py-2 transition-all duration-200"
-              onClick={() => setShowFilterDropdown(v => !v)}
-            >
-              <FiMap className="w-4 h-4" />
-              <span>Filter</span>
-            </button>
-            {showFilterDropdown && (
-              <div className="absolute top-12 right-0 bg-white border border-gray-200 rounded-lg shadow-lg p-3 z-50 min-w-[220px]">
-                <label className="block text-xs font-semibold mb-1">Filter by District</label>
-                <select
-                  className="w-full border border-gray-300 rounded px-2 py-1 text-sm mb-2"
-                  value={filterDistrict}
-                  onChange={e => {
-                    setFilterDistrict(e.target.value);
-                    setFilterArea(''); // Reset area filter when district changes
-                  }}
-                >
-                  <option value="">All Districts</option>
-                  {districts.map(d => (
-                    <option key={d._id} value={d._id}>{d.title}</option>
-                  ))}
-                </select>
-                <label className="block text-xs font-semibold mb-1 mt-2">Filter by Area</label>
-                <select
-                  className="w-full border border-gray-300 rounded px-2 py-1 text-sm mb-2"
-                  value={filterArea}
-                  onChange={e => setFilterArea(e.target.value)}
-                  disabled={!filterDistrict}
-                >
-                  <option value="">{filterDistrict ? 'All Areas' : 'Select District First'}</option>
-                  {areas.filter(a => !filterDistrict || (a.district && a.district._id === filterDistrict)).map(a => (
-                    <option key={a._id} value={a._id}>{a.title}</option>
-                  ))}
-                </select>
-                {(filterDistrict || filterArea) && (
-                  <button
-                    className="w-full text-xs text-gray-600 bg-gray-100 rounded px-2 py-1 hover:bg-gray-200"
-                    onClick={() => { setFilterDistrict(''); setFilterArea(''); setShowFilterDropdown(false); }}
-                  >
-                    Clear Filter
-                  </button>
-                )}
-              </div>
-            )}
-            <button 
-              onClick={() => setShowCreateForm(true)}
-              className="flex items-center space-x-2 text-sm font-medium text-white bg-gradient-to-r from-[#5041BC] to-[#6C63FF] hover:from-[#6C63FF] hover:to-[#5041BC] rounded-lg px-3 py-2 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105"
-            >
-              <FiPlus className="w-4 h-4" />
-              <span className="hidden sm:inline">Create Members Group</span>
-              <span className="sm:hidden">Create</span>
-            </button>
-          </div>
         </div>
         
-        <div className="flex-1 flex flex-col p-4 pt-8">
-          <main className="flex-1 min-w-0 mt-4 sm:mt-6 md:mt-4">
+        <div className="flex-1 flex flex-col p-4 pt-2">
+          <main className="flex-1 min-w-0 mt-2">
             {/* Heading */}
             <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-extrabold bg-gradient-to-r from-[#5041BC] via-[#6C63FF] to-[#8B7EFF] bg-clip-text text-transparent mb-2 tracking-tight leading-normal pb-1 pr-4 sm:pr-8 md:pr-0">Members Group Management</h2>
-            <div className="mb-4 sm:mb-6 md:mb-4"></div>
-            {/* Toolbar */}
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-4">
-              <div className="flex items-center w-full sm:w-auto gap-2">
-                {/* Empty space for consistency with UserPage layout */}
+            
+            {/* Toolbar: search left, filter/create right */}
+            <div className="flex flex-row items-center justify-between mb-4 gap-2">
+              <div className="relative w-full max-w-xs">
+                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
+                  <FiSearch className="w-4 h-4" />
+                </span>
+                <input
+                  type="text"
+                  placeholder="Search groups..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="pl-10 pr-3 py-2 w-full rounded-lg border border-gray-200 bg-gray-50 focus:outline-none focus:ring-2 focus:ring-[#5041BC]/30 text-sm"
+                />
               </div>
-              <div className="flex items-center gap-2 sm:gap-3">
+              <div className="flex flex-row gap-2 items-center">
+                <div className="relative filter-dropdown">
+                  <button 
+                    onClick={() => setShowFilterDropdown(!showFilterDropdown)}
+                    className="flex items-center space-x-2 text-sm font-medium text-gray-600 bg-gray-100/60 hover:bg-gray-100 rounded-lg px-3 py-2 transition-colors"
+                  >
+                    <FiFilter className="w-4 h-4" />
+                    <span>Filter</span>
+                    {(filterDistrict || filterArea) && (
+                      <span className="bg-[#5041BC] text-white text-xs rounded-full px-1.5 py-0.5 ml-1">
+                        {[filterDistrict, filterArea].filter(Boolean).length}
+                      </span>
+                    )}
+                    <FiChevronDown className={`w-4 h-4 transition-transform ${showFilterDropdown ? 'rotate-180' : ''}`} />
+                  </button>
+                  {/* Dropdown Menu */}
+                  {showFilterDropdown && (
+                    <div className="absolute right-0 mt-2 w-72 bg-white rounded-lg shadow-lg border border-gray-200 z-50">
+                      <div className="p-4 space-y-4">
+                        <div className="flex items-center justify-between border-b border-gray-200 pb-2">
+                          <h3 className="text-sm font-semibold text-gray-700">Filter Options</h3>
+                          <button
+                            onClick={() => setShowFilterDropdown(false)}
+                            className="text-gray-400 hover:text-gray-600"
+                          >
+                            <FiX className="w-4 h-4" />
+                          </button>
+                        </div>
+                        {/* District Filter */}
+                        <div>
+                          <label className="block text-xs font-medium text-gray-700 mb-1">District</label>
+                          <select
+                            value={filterDistrict}
+                            onChange={e => {
+                              setFilterDistrict(e.target.value);
+                              setFilterArea(''); // Reset area filter when district changes
+                            }}
+                            className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-[#5041BC] focus:border-[#5041BC]"
+                          >
+                            <option value="">All Districts</option>
+                            {districts.map(d => (
+                              <option key={d._id} value={d._id}>{d.title}</option>
+                            ))}
+                          </select>
+                        </div>
+                        {/* Area Filter */}
+                        <div>
+                          <label className="block text-xs font-medium text-gray-700 mb-1">Area</label>
+                          <select
+                            value={filterArea}
+                            onChange={e => setFilterArea(e.target.value)}
+                            disabled={!filterDistrict}
+                            className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-[#5041BC] focus:border-[#5041BC]"
+                          >
+                            <option value="">{filterDistrict ? 'All Areas' : 'Select District First'}</option>
+                            {areas.filter(a => !filterDistrict || (a.district && a.district._id === filterDistrict)).map(a => (
+                              <option key={a._id} value={a._id}>{a.title}</option>
+                            ))}
+                          </select>
+                        </div>
+                        {/* Actions */}
+                        <div className="flex gap-2 pt-2 border-t border-gray-200">
+                          <button
+                            onClick={() => {
+                              setFilterDistrict('');
+                              setFilterArea('');
+                              setShowFilterDropdown(false);
+                            }}
+                            className="flex-1 px-3 py-1.5 text-xs border border-gray-300 rounded text-gray-700 hover:bg-gray-50 font-medium"
+                          >
+                            Clear All
+                          </button>
+                          <button
+                            onClick={() => setShowFilterDropdown(false)}
+                            className="flex-1 px-3 py-1.5 text-xs bg-[#5041BC] text-white rounded hover:bg-[#6C63FF] font-medium"
+                          >
+                            Apply
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+                <button 
+                  onClick={() => setShowCreateForm(true)}
+                  className="flex items-center space-x-2 text-sm font-medium text-white bg-gradient-to-r from-[#5041BC] to-[#6C63FF] hover:from-[#6C63FF] hover:to-[#5041BC] rounded-lg px-3 py-2 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105"
+                >
+                  <FiPlus className="w-4 h-4" />
+                  <span className="hidden sm:inline">Create Members Group</span>
+                  <span className="sm:hidden">Create</span>
+                </button>
               </div>
             </div>
             
@@ -343,7 +403,7 @@ export default function MemberGroupPage() {
             )}
             
             {/* Members Group Table */}
-            <div className="bg-white rounded-xl shadow-lg p-4 max-h-[86vh] overflow-y-auto mt-16 sm:mt-8 md:mt-0">
+            <div className="bg-white rounded-xl shadow-lg p-4 max-h-[86vh] overflow-y-auto">
               <DataTable
                 ref={tableRef}
                 data={filteredMembersGroups}

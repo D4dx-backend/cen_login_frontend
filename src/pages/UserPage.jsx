@@ -345,12 +345,12 @@ export default function UserPage() {
       {/* Main content positioned to the right of sidebar */}
       <div className="relative z-20 flex flex-col min-h-screen transition-all duration-300 ease-in-out" style={{ marginLeft: 'var(--sidebar-width, 64px)' }}>
         {/* Profile Button - Top Right */}
-        <div className="absolute top-4 right-4 z-30">
+        <div className="absolute top-2 right-4 z-30">
           <ProfileButton />
           </div>
         
-        <div className="flex-1 flex flex-col p-4 pt-8">
-          <main className="flex-1 min-w-0 mt-4 sm:mt-6 md:mt-4">
+        <div className="flex-1 flex flex-col p-4 pt-2">
+          <main className="flex-1 min-w-0 mt-2">
             {/* Heading */}
             <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-extrabold text-[#5041BC] mb-2 tracking-tight leading-normal pb-1 pr-4 sm:pr-8 md:pr-0">User Management</h2>
             {/* Toolbar: search left, filter/create right */}

@@ -7,7 +7,7 @@ import DeleteConfirmModal from '../components/DeleteConfirmModal';
 import DataTable from '../components/DataTable';
 import CreateModal from '../components/CreateModal';
 
-import { FiPlus, FiTrash2, FiEdit, FiMap, FiLoader, FiAlertTriangle, FiX, FiSave } from 'react-icons/fi';
+import { FiPlus, FiTrash2, FiEdit, FiMap, FiLoader, FiAlertTriangle, FiX, FiSave, FiSearch } from 'react-icons/fi';
 
 const API_BASE_URL = 'http://localhost:3000/api';
 
@@ -40,6 +40,7 @@ export default function DistrictPage() {
   const [formData, setFormData] = useState({
     title: '',
   });
+  const [searchTerm, setSearchTerm] = useState('');
 
   useEffect(() => {
     fetchDistricts();
@@ -151,6 +152,12 @@ export default function DistrictPage() {
     }
   };
 
+  // Filtered districts based on search term
+  const filteredDistricts = districts.filter(district => {
+    const searchMatch = searchTerm ? district.title?.toLowerCase().includes(searchTerm.toLowerCase()) : true;
+    return searchMatch;
+  });
+
   const startEdit = (district) => {
     setFormData({
       title: district.title,
@@ -172,25 +179,40 @@ export default function DistrictPage() {
       </div>
       <div className="relative z-20 flex flex-col min-h-screen transition-all duration-300 ease-in-out" style={{ marginLeft: 'var(--sidebar-width, 224px)' }}>
         {/* Profile Button - Top Right */}
-        <div className="absolute top-4 right-4 z-30 flex flex-col items-end gap-2">
+        <div className="absolute top-2 right-4 z-30">
           <ProfileButton />
-          <div className="flex flex-row gap-2 mt-2">
-            <button 
-              onClick={() => setShowCreateForm(true)}
-              className="flex items-center space-x-2 text-sm font-medium text-white bg-gradient-to-r from-[#5041BC] to-[#6C63FF] hover:from-[#6C63FF] hover:to-[#5041BC] rounded-lg px-3 py-2 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105"
-            >
-              <FiPlus className="w-4 h-4" />
-              <span className="hidden sm:inline">Create District</span>
-              <span className="sm:hidden">Create</span>
-            </button>
-          </div>
         </div>
         
-        <div className="flex-1 flex flex-col p-4 pt-8">
-          <main className="flex-1 min-w-0 mt-4 sm:mt-6 md:mt-4">
+        <div className="flex-1 flex flex-col p-4 pt-2">
+          <main className="flex-1 min-w-0 mt-2">
             {/* Heading */}
             <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-extrabold bg-gradient-to-r from-[#5041BC] via-[#6C63FF] to-[#8B7EFF] bg-clip-text text-transparent mb-2 tracking-tight leading-normal pb-1 pr-4 sm:pr-8 md:pr-0">District Management</h2>
-            <div className="mb-4 sm:mb-6 md:mb-4"></div>
+            
+            {/* Toolbar: search left, create right */}
+            <div className="flex flex-row items-center justify-between mb-4 gap-2">
+              <div className="relative w-full max-w-xs">
+                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
+                  <FiSearch className="w-4 h-4" />
+                </span>
+                <input
+                  type="text"
+                  placeholder="Search districts..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="pl-10 pr-3 py-2 w-full rounded-lg border border-gray-200 bg-gray-50 focus:outline-none focus:ring-2 focus:ring-[#5041BC]/30 text-sm"
+                />
+              </div>
+              <div className="flex flex-row gap-2 items-center">
+                <button 
+                  onClick={() => setShowCreateForm(true)}
+                  className="flex items-center space-x-2 text-sm font-medium text-white bg-gradient-to-r from-[#5041BC] to-[#6C63FF] hover:from-[#6C63FF] hover:to-[#5041BC] rounded-lg px-3 py-2 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105"
+                >
+                  <FiPlus className="w-4 h-4" />
+                  <span className="hidden sm:inline">Create District</span>
+                  <span className="sm:hidden">Create</span>
+                </button>
+              </div>
+            </div>
             
             {successMessage && (
               <div className="mb-4 p-3 bg-green-100 border border-green-400 text-green-700 rounded-lg text-sm">
@@ -199,10 +221,10 @@ export default function DistrictPage() {
             )}
             
             {/* District Table */}
-            <div className="bg-white rounded-xl shadow-lg p-4 max-h-[86vh] overflow-y-auto mt-16 sm:mt-8 md:mt-0">
+            <div className="bg-white rounded-xl shadow-lg p-4 max-h-[86vh] overflow-y-auto">
               <DataTable
                 ref={tableRef}
-                data={districts}
+                data={filteredDistricts}
                 loading={loading}
                 error={error}
                 onRetry={fetchDistricts}

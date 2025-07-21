@@ -56,26 +56,27 @@ export default function AppPage() {
         <Sidebar />
       </div>
       <div className="relative z-20 flex flex-col min-h-screen transition-all duration-300 ease-in-out" style={{ marginLeft: 'var(--sidebar-width, 224px)' }}>
-        <div className="absolute top-4 right-4 z-30 flex flex-col items-end gap-2">
+        <div className="absolute top-2 right-4 z-30">
           <ProfileButton />
-          <div className="flex flex-row gap-2 mt-2">
-            <button 
-              onClick={() => setShowCreateForm(true)}
-              className="flex items-center space-x-2 text-sm font-medium text-white bg-gradient-to-r from-[#5041BC] to-[#6C63FF] hover:from-[#6C63FF] hover:to-[#5041BC] rounded-lg px-3 py-2 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105"
-            >
-              <FiPlus className="w-4 h-4" />
-              <span className="hidden sm:inline">Create App</span>
-              <span className="sm:hidden">Create</span>
-            </button>
-          </div>
         </div>
         
-        <div className="flex-1 flex flex-col p-4 pt-8">
-          <main className="flex-1 min-w-0 mt-4 sm:mt-6 md:mt-4">
+        <div className="flex-1 flex flex-col p-4 pt-2">
+          <main className="flex-1 min-w-0 mt-2">
             <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-extrabold bg-gradient-to-r from-[#5041BC] via-[#6C63FF] to-[#8B7EFF] bg-clip-text text-transparent mb-2 tracking-tight leading-normal pb-1 pr-4 sm:pr-8 md:pr-0">Application Management</h2>
-            <div className="mb-4 sm:mb-6 md:mb-4"></div>
+            
+            {/* Toolbar: create button on the right */}
+            <div className="flex flex-row items-center justify-end mb-4">
+              <button 
+                onClick={() => setShowCreateForm(true)}
+                className="flex items-center space-x-2 text-sm font-medium text-white bg-gradient-to-r from-[#5041BC] to-[#6C63FF] hover:from-[#6C63FF] hover:to-[#5041BC] rounded-lg px-3 py-2 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105"
+              >
+                <FiPlus className="w-4 h-4" />
+                <span className="hidden sm:inline">Create App</span>
+                <span className="sm:hidden">Create</span>
+              </button>
+            </div>
 
-            <div className="bg-white rounded-xl shadow-lg p-4 max-h-[86vh] overflow-y-auto mt-16 sm:mt-8 md:mt-0">
+            <div className="bg-white rounded-xl shadow-lg p-4 max-h-[86vh] overflow-y-auto">
               <AppList refreshTrigger={refreshTrigger} />
             </div>
           </main>
