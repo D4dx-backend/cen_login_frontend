@@ -173,7 +173,10 @@ export default function AreaPage() {
   // Filtered areas based on selected district and search term
   const filteredAreas = areas.filter(area => {
     const districtMatch = filterDistrict ? (area.district && area.district._id === filterDistrict) : true;
-    const searchMatch = searchTerm ? area.title?.toLowerCase().includes(searchTerm.toLowerCase()) : true;
+    const searchMatch = searchTerm ? (
+      area.title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      area.code?.toLowerCase().includes(searchTerm.toLowerCase())
+    ) : true;
     return districtMatch && searchMatch;
   });
 
@@ -201,7 +204,7 @@ export default function AreaPage() {
                 </span>
                 <input
                   type="text"
-                  placeholder="Search areas..."
+                  placeholder="Search areas or codes..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   className="pl-10 pr-3 py-2 w-full rounded-lg border border-gray-200 bg-gray-50 focus:outline-none focus:ring-2 focus:ring-[#5041BC]/30 text-sm"
@@ -303,6 +306,12 @@ export default function AreaPage() {
                     type: 'avatar',
                     fallback: 'A',
                     searchable: true
+                  },
+                  {
+                    key: 'code',
+                    label: 'Code',
+                    type: 'badge',
+                    getBadgeClass: () => 'bg-blue-50 text-blue-800 border border-blue-200 font-mono'
                   },
                   {
                     key: 'district.title',
