@@ -2,7 +2,6 @@ import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
 import Sidebar from '../components/Sidebar';
 import PageBackground from '../components/PageBackground';
-import ProfileButton from '../components/ProfileButton';
 import DataTable from '../components/DataTable';
 import DeleteConfirmModal from '../components/DeleteConfirmModal';
 import CreateModal from '../components/CreateModal';
@@ -234,12 +233,8 @@ export default function HalqaPage() {
         <Sidebar />
       </div>
       <div className="relative z-20 flex flex-col min-h-screen transition-all duration-300 ease-in-out" style={{ marginLeft: 'var(--sidebar-width, 224px)' }}>
-        {/* Profile Button - Top Right */}
-        <div className="absolute top-2 right-4 z-30">
-          <ProfileButton />
-        </div>
         
-        <div className="flex-1 flex flex-col p-4 pt-2">
+        <div className="flex-1 flex flex-col pl-12 pr-6 py-4">
           <main className="flex-1 min-w-0 mt-2">
             {/* Heading */}
             <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-extrabold bg-gradient-to-r from-[#5041BC] via-[#6C63FF] to-[#8B7EFF] bg-clip-text text-transparent mb-2 tracking-tight leading-normal pb-1 pr-4 sm:pr-8 md:pr-0">Halqa Management</h1>
@@ -385,13 +380,6 @@ export default function HalqaPage() {
                     type: 'badge',
                     getBadgeClass: () => 'bg-amber-50 text-amber-800 border border-amber-200'
                   },
-                  {
-                    key: 'membersGroup.title',
-                    label: 'Members Group',
-                    type: 'badge',
-                    getBadgeClass: () => 'bg-violet-50 text-violet-800 border border-violet-200',
-                    getValue: (item) => item.membersGroup?.title || 'Not assigned'
-                  }
                 ]}
                 actions={[
                   {

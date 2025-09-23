@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect, createContext, useContext } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { FiUsers, FiBarChart2, FiSettings, FiBell, FiCreditCard, FiHelpCircle, FiHome, FiUser, FiSmartphone, FiMap, FiMapPin, FiUsers as FiUsersGroup, FiLogOut, FiChevronsLeft, FiChevronsRight, FiMenu, FiX } from 'react-icons/fi';
+import dxLogoWhite from '../assets/dxLogoWhite.png';
 
 // Create context within this file
 const SidebarContext = createContext();
@@ -31,12 +32,9 @@ export const SidebarProvider = ({ children }) => {
 };
 
 const navLinks = [
-  { name: 'USER', icon: <FiUser />, path: '/user' },
   { name: 'HALQA', icon: <FiHome />, path: '/halqa' },
-  { name: 'APP', icon: <FiSmartphone />, path: '/app' },
   { name: 'DISTRICT', icon: <FiMap />, path: '/district' },
   { name: 'AREA', icon: <FiMapPin />, path: '/area' },
-  { name: 'MEMBERS GROUP', icon: <FiUsersGroup />, path: '/member-group' },
 ];
 
 export default function Sidebar() {
@@ -157,7 +155,7 @@ export default function Sidebar() {
             ? isMobileExpanded ? 'py-4 px-4' : 'py-4 px-1'
             : isExpanded ? 'py-6 pl-6 pr-4' : 'py-6 px-2'
           } 
-          ${!isMobile && !isExpanded ? 'rounded-tr-[30px] rounded-br-[30px]' : ''} 
+          ${!isMobile ? 'rounded-tr-[30px] rounded-br-[30px]' : ''} 
           ${isMobile && !isMobileExpanded ? 'rounded-tr-[20px] rounded-br-[20px]' : ''}
           shadow-2xl overflow-hidden
         `}
@@ -218,7 +216,7 @@ export default function Sidebar() {
         <hr className="border-t border-[#A26AEA] mb-4 opacity-30" />
         
       <nav className="flex-1">
-          <ul className={`${isMobile && !isMobileExpanded ? 'space-y-2' : 'space-y-1'}`}>
+          <ul className={`${isMobile && !isMobileExpanded ? 'space-y-4' : 'space-y-3'}`}>
           {navLinks.map((link, index) => (
             <li key={link.name}>
               <button
@@ -279,9 +277,16 @@ export default function Sidebar() {
         </button>
       </div>
       
-        {isExpanded && (
-          <div className="mt-4 text-xs text-gray-200">© Hira Community</div>
-      )}
+        <div className="mt-4 flex flex-col items-center space-y-2">
+          <img 
+            src={dxLogoWhite} 
+            alt="D4DX Logo" 
+            className="w-8 h-8 object-contain"
+          />
+          {isExpanded && (
+            <div className="text-xs text-gray-200 font-medium">POWERED BY D4DX</div>
+          )}
+        </div>
     </aside>
     </>
   );

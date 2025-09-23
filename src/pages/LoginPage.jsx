@@ -36,7 +36,7 @@ function LoginPage() {
       if (response.data.success) {
         localStorage.setItem('adminToken', response.data.token)
         localStorage.setItem('userType', 'admin')
-        navigate('/user')
+        navigate('/halqa')
       }
     } catch (error) {
       setMessage(error.response?.data?.message || 'Login failed')
@@ -47,8 +47,8 @@ function LoginPage() {
 
   return (
     <div className="min-h-screen w-full flex bg-[#e3e6eb]" style={{ fontFamily: 'Aileron, sans-serif' }}>
-      {/* Left Sidebar - #5041BC, full height, subtle curve */}
-      <div className="flex flex-col items-center justify-center w-[30vw] h-screen rounded-r-xl shadow-2xl" style={{background:'#5041BC'}}>
+      {/* Left Sidebar - Gradient background, full height, subtle curve */}
+      <div className="flex flex-col items-center justify-center w-[30vw] h-screen rounded-r-xl shadow-2xl bg-gradient-to-br from-[#2D1B69] via-[#5041BC] to-[#6C63FF]">
         <div className="flex flex-col items-center">
           <div className="mb-8">
             <svg width="80" height="80" viewBox="0 0 120 120" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -58,7 +58,7 @@ function LoginPage() {
               <polygon points="60,50 40,80 80,80" fill="#5041BC" />
             </svg>
           </div>
-          <h1 className="text-xl md:text-2xl font-extrabold tracking-tight text-white">Hira Community</h1>
+          <h1 className="text-xl md:text-2xl font-extrabold tracking-tight text-white">Common Login</h1>
         </div>
       </div>
       {/* Divider */}
@@ -128,10 +128,7 @@ function LoginPage() {
             >
               {loading ? 'Loading...' : 'Login'}
             </button>
-            
-            <div className="flex justify-end mt-2">
-              <a href="#" className="text-xs text-white hover:underline transition-colors">Forgot password?</a>
-            </div>
+                
           </form>
         </div>
       </div>
